@@ -1,0 +1,74 @@
+use_clauses
+region
+cube cex cexprime cexprev notP
+index maxframes currframe stkptr i j
+$$
+
+SET(currframe, 0)
+SET(stkptr, 0)
+SET(maxframes, 100)
+COPY(CNF_ARR[currframe], I)
+
+SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
+if (cex){
+	++stkptr
+	COPY(CLS_ARR[stkptr], cex)
+	return 0
+}
+
+--currframe
+while(currframe < maxframes){
+	SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
+	if (cex){
+
+		++stkptr
+		COPY(CLS_ARR[stkptr], cex)
+		--currframe
+
+		while(stkptr > 0){
+			if (currframe < 0){
+				return 1
+			}
+			else{
+				COPY(cex, CLS_ARR[stkptr])
+				SET(i, 1)
+				while (i <= currframe){
+					# CNF_ARR[i] ^= cex
+					++currframe
+				}
+
+				COPY(cexprime, cex)
+				PRIME(cexprime)
+				SAT(CNF_ARR[currframe] ^ T ^ cexprime, cexprev)
+
+				if (cexprev){
+					++stkptr
+					COPY(CLS_ARR[stkptr], cexprev)
+					--currframe
+				}
+				else{
+					--stkptr
+					++currframe
+					# CNF_ARR[currframe] ^= cex
+				}
+
+			}
+		}
+
+		SET(i, 0)
+		SET(j, 1)
+		while (i < currframe){
+			SMP(CNF_ARR[i], CNF_ARR[j], cex)
+			if (!cex){
+				return 1
+			}
+		}
+
+	}
+	else{
+		++currframe
+	}
+}
+
+return 0
+

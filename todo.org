@@ -1,0 +1,15 @@
+[X] Common network manager
+[X] Add parser/scanner
+[X] Common symbols interface
+[X] Computation functions
+[ ] Copy values to Inits
+[ ] Arrays Init
+
+------------------------------------------
+
+[ ] Prop Clauses
+[ ] Generalization
+
+
+
+[ ] Is the better implementation of return good enough?
