@@ -13,15 +13,28 @@ type fetch_type(opd &opd_){
 data_struct *fetch_data(opd &opd_){
 	if (opd_.ty == opd_type::var)
 		return symtab[opd_.val].data;
-	else if (opd_.ty == opd_type::arr)
-		return &((symtab[opd_.val].data)[opd_.idx]);
+	else if (opd_.ty == opd_type::arr){
+		assert(0<=opd_.idx && opd_.idx<ARR_SZ);
+		type ty = symtab[opd_.val].entry_type;
+		if (ty == type::region)
+			return &(((region *)symtab[opd_.val].data)[opd_.idx]);
+		else if (ty == type::cube)
+			return &(((cube_ *)symtab[opd_.val].data)[opd_.idx]);
+	}
 	else
 		assert(false);
 }
 
+region *fetch_region(opd &opd_){
+	return &(((region *)symtab[opd_.val].data)[opd_.idx]);
+}
+
+cube_ *fetch_cube(opd &opd_){
+	return &(((cube_ *)symtab[opd_.val].data)[opd_.idx]);
+}
+
 void ast_node::compute(){
-	std::cerr<<"Not implemented"<<std::endl;
-	assert(false);
+	logAndStop("Not implemented");
 }
 
 void lre_node::compute(){
@@ -47,8 +60,7 @@ void lre_node::compute(){
 			break;
 
 		default:
-			std::cerr<<"Should not reach here"<<std::endl;
-			assert(false);
+			logAndStop("Should not reach here");
 			break;
 	}
 }
@@ -113,8 +125,7 @@ void bool_node::compute(){
 			break;
 
 		default:
-			std::cerr<<"Should not reach here"<<std::endl;
-			assert(false);
+			logAndStop("Should not reach here");
 			break;
 	}
 }
@@ -124,6 +135,20 @@ void comp_node::compute(){
 		case comp_type::_copy:
 			(*fetch_data(opd1)) = (*fetch_data(opd2));
 			break;
+
+		case comp_type::_conjunct:{
+			type t1 = fetch_type(opd1), t2 = fetch_type(opd2);
+			if (t1 == type::cube && t1 == type::cube){
+				((cube_ *)fetch_data(opd1))->conjunct(*(cube_ *)fetch_data(opd2));
+			}
+			else if (t1 == type::region && t1 == type::cube)
+				((region *)fetch_data(opd1))->conjunct(*(cube_ *)fetch_data(opd2));
+			else if (t1 == type::region && t1 == type::region)
+				((region *)fetch_data(opd1))->conjunct(*(region *)fetch_data(opd2));
+			else
+				logAndStop("Should not reach here");
+			break;
+		}
 
 		case comp_type::_inc:
 			++(*fetch_data(opd1));
@@ -139,8 +164,7 @@ void comp_node::compute(){
 			else if (fetch_type(opd1) == type::cube)
 				((cube_ *)fetch_data(opd1))->toPrime(man_t.toPrime);
 			else
-				std::cerr<<"Should not reach here"<<std::endl;
-				assert(false);
+				logAndStop("Should not reach here");
 			break;
 
 		case comp_type::_set:
@@ -183,8 +207,7 @@ void comp_node::compute(){
 			break;
 
 		default:
-			std::cerr<<"Should not reach here"<<std::endl;
-			assert(false);
+			logAndStop("Should not reach here");
 			break;
 	}
 }

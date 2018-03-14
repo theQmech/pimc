@@ -6,6 +6,22 @@ symtab_ symtab;
 lre_driver driver;
 _result global_ret_value = _result::UNDEF;
 
+void fillsymbols(){
+	symtab.addsymbol(type::cube, "P");
+	symtab.addsymbol(type::region, "T");
+	symtab.addsymbol(type::region, "I");
+
+	symtab.addsymbol(type::cube, "CLS_ARR", true);
+	symtab.addsymbol(type::region, "CNF_ARR", true);
+}
+
+void initsymbols(){
+	// TODO: Copy vals
+	*(symtab[symtab.get_symbol("P")].data) = getProperty();
+	*(symtab[symtab.get_symbol("T")].data) = getT();
+	*(symtab[symtab.get_symbol("I")].data) = getInit();
+}
+
 int main(int argc, char *argv[]){
 	if (argc != 3){
 		cout<<"Usage: "<<argv[0]<<" <lre_file> <aig_file>"<<endl;
@@ -14,13 +30,6 @@ int main(int argc, char *argv[]){
 
 	string lre_file = argv[1];
 	string aig_file = argv[2];
-
-	if (driver.parse(argv[1]) == 0)
-		std::cout<<"Parsing complete"<<std::endl;
-	else{
-		std::cerr<<"Parsing fail"<<std::endl;
-		return 1;
-	}
 
 	Abc_Start();
 
@@ -35,6 +44,16 @@ int main(int argc, char *argv[]){
 
 	man_t.load_network(pAbc);
 	cout<<"Processed AIG file"<<endl;
+
+	fillsymbols();
+	initsymbols();
+
+	if (driver.parse(argv[1]) == 0)
+		std::cout<<"Parsing complete"<<std::endl;
+	else{
+		std::cerr<<"Parsing fail"<<std::endl;
+		return 1;
+	}
 
 	driver.root->compute();
 

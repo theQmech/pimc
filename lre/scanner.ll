@@ -58,6 +58,7 @@ blank [ \t]
 "["             return yy::lre_parser::make_SLPAREN(loc);
 "]"             return yy::lre_parser::make_SRPAREN(loc);
 "="             return yy::lre_parser::make_ASSIGN(loc);
+"^="            return yy::lre_parser::make_CONJUNCT(loc);
 "++"            return yy::lre_parser::make_INC(loc);
 "--"            return yy::lre_parser::make_DEC(loc);
 "~"             return yy::lre_parser::make_NEGATION(loc);

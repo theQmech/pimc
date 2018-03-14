@@ -7,12 +7,12 @@ $$
 SET(currframe, 0)
 SET(stkptr, 0)
 SET(maxframes, 100)
-COPY(CNF_ARR[currframe], I)
+CNF_ARR[currframe] = I
 
 SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
 if (cex){
 	++stkptr
-	COPY(CLS_ARR[stkptr], cex)
+	CLS_ARR[stkptr] = cex
 	return 0
 }
 
@@ -22,7 +22,7 @@ while(currframe < maxframes){
 	if (cex){
 
 		++stkptr
-		COPY(CLS_ARR[stkptr], cex)
+		CLS_ARR[stkptr] = cex
 		--currframe
 
 		while(stkptr > 0){
@@ -30,26 +30,26 @@ while(currframe < maxframes){
 				return 1
 			}
 			else{
-				COPY(cex, CLS_ARR[stkptr])
+				cex = CLS_ARR[stkptr]
 				SET(i, 1)
 				while (i <= currframe){
-					# CNF_ARR[i] ^= cex
+					CNF_ARR[i] ^= cex
 					++currframe
 				}
 
-				COPY(cexprime, cex)
+				cexprime = cex
 				PRIME(cexprime)
 				SAT(CNF_ARR[currframe] ^ T ^ cexprime, cexprev)
 
 				if (cexprev){
 					++stkptr
-					COPY(CLS_ARR[stkptr], cexprev)
+					CLS_ARR[stkptr] = cexprev
 					--currframe
 				}
 				else{
 					--stkptr
 					++currframe
-					# CNF_ARR[currframe] ^= cex
+					CNF_ARR[currframe] ^= cex
 				}
 
 			}

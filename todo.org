@@ -2,14 +2,15 @@
 [X] Add parser/scanner
 [X] Common symbols interface
 [X] Computation functions
-[ ] Copy values to Inits
-[ ] Arrays Init
+[X] Copy values to Inits
+[X] Arrays Init
+[ ] Refactor DSs into files
 
 ------------------------------------------
 
 [ ] Prop Clauses
 [ ] Generalization
-
+[ ] How to free arrays?
 
 
 [ ] Is the better implementation of return good enough?

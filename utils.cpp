@@ -1,4 +1,10 @@
+#include "api.h"
 #include "utils.h"
+
+void logAndStop(string msg){
+    cerr<<msg<<endl;
+    assert(false);
+}
 
 /*! Function
  * Reads .aig file to Abc_Frame_t
@@ -205,7 +211,7 @@ bool region::sanityCheck(vector<lit> &U){
 /*! Empty constructor
  */
 region::region(){
-    nVars = 0;
+    nVars = man_t.Network_Cnf()->nVars;
     nClauses = 0;
     nLits = 0;
     vClauses.clear();

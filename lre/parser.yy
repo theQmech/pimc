@@ -56,6 +56,7 @@ class lre_driver;
   SLPAREN       "["
   SRPAREN       "]"
   ASSIGN        "="
+  CONJUNCT      "^="
   INC           "INC"
   DEC           "DEC"
   OR            "||"
@@ -231,6 +232,14 @@ exp:
     if (symtab[$1.val].entry_type != symtab[$3.val].entry_type)
       yy::lre_parser::error(@$, "unequal data types");
     $$ = new comp_node($1, $3, comp_type::_copy);
+  }
+| label_rev "^=" label_rev
+  {
+    if (symtab[$1.val].entry_type == type::index)
+      yy::lre_parser::error(@$, "data type incompat");
+    if (symtab[$3.val].entry_type == type::index)
+      yy::lre_parser::error(@$, "data type incompat");
+    $$ = new comp_node($1, $3, comp_type::_conjunct);
   }
 | "INC" label_rev
   {

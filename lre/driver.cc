@@ -2,7 +2,6 @@
 #include "parser.hh"
 
 lre_driver::lre_driver():trace_scanning(false),trace_parsing(false){
-  initsymbols();
 }
 
 lre_driver::~lre_driver(){
