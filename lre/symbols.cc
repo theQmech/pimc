@@ -10,11 +10,10 @@ lre_node::lre_node(node_type ty_):ast_node(NULL, NULL),n3(NULL),ty(ty_){n1 = NUL
 lre_node::lre_node(ast_node *n1_, ast_node *n2_, node_type ty_):ast_node(n1_, n2_),n3(NULL),ty(ty_){}
 lre_node::lre_node(ast_node *n1_, ast_node *n2_, ast_node *n3_, node_type ty_):ast_node(n1_, n2_),n3(n3_),ty(ty_){}
 
-bool_node::bool_node(ast_node *n1_, bool_op op_):ast_node(n1_, NULL),v1(-1),op(op_),result(false){}
-bool_node::bool_node(ast_node *n1_, ast_node *n2_, bool_op op_):ast_node(n1_, n2_),v1(-1),op(op_),result(false){}
-bool_node::bool_node(opd opd1_, bool_op op_):ast_node(NULL, NULL),opd1(opd1_),v1(-1),op(op_),result(false){}
-bool_node::bool_node(opd opd1_, opd opd2_, bool_op op_):ast_node(NULL, NULL),opd1(opd1_),opd2(opd2_),v1(-1),op(op_),result(false){}
-bool_node::bool_node(opd opd1_, int v1_, bool_op op_):ast_node(NULL, NULL),opd1(opd1_),v1(v1_),op(op_),result(false){}
+bool_node::bool_node(ast_node *n1_, bool_op op_):ast_node(n1_, NULL),op(op_),result(false){}
+bool_node::bool_node(ast_node *n1_, ast_node *n2_, bool_op op_):ast_node(n1_, n2_),op(op_),result(false){}
+bool_node::bool_node(opd opd1_, bool_op op_):ast_node(NULL, NULL),opd1(opd1_),op(op_),result(false){}
+bool_node::bool_node(opd opd1_, opd opd2_, bool_op op_):ast_node(NULL, NULL),opd1(opd1_),opd2(opd2_),op(op_),result(false){}
 
 comp_node::comp_node(int val_, comp_type op_):ast_node(NULL, NULL),val(val_),op(op_){}
 comp_node::comp_node(opd opd1_, comp_type op_):ast_node(NULL, NULL),opd1(opd1_),op(op_){}

@@ -41,7 +41,6 @@ blank [ \t]
 "use_bdd"       return yy::lre_parser::make_USEBDD(loc);
 "use_clauses"   return yy::lre_parser::make_USECLAUSES(loc);
 "$$"            return yy::lre_parser::make_SEPARATOR(loc);
-"SET"           return yy::lre_parser::make_SET(loc);
 "PRIME"         return yy::lre_parser::make_PRIME(loc);
 "return"        return yy::lre_parser::make_RETURN(loc);
 "region"        return yy::lre_parser::make_REGION(loc);

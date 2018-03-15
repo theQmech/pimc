@@ -42,7 +42,6 @@ class lre_driver;
   COMMA         ","
   USEBDD        "USEBDD"
   USECLAUSES    "USECLAUSES"
-  SET           "SET"
   PRIME         "PRIME"
   RETURN        "RETURN"
   REGION        "REGION"
@@ -239,6 +238,12 @@ exp:
       yy::lre_parser::error(@$, "unequal data types");
     $$ = new comp_node($1, $3, comp_type::_copy);
   }
+| label_rev "=" num_opd
+  {
+    if (symtab[$1.val].entry_type != type::index)
+      yy::lre_parser::error(@$, "unequal data types");
+    $$ = new comp_node($1, $3, comp_type::_copy);
+  }
 | label_rev "^=" label_rev
   {
     if (symtab[$1.val].entry_type == type::index)
@@ -264,12 +269,6 @@ exp:
     if (symtab[$3.val].entry_type == type::index)
       yy::lre_parser::error(@$, "data type incompat");
     $$ = new comp_node($3, comp_type::_prime);
-  }
-| "SET" "(" label_rev "," "number" ")"
-  {
-    if (symtab[$3.val].entry_type != type::index)
-      yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($3, $5, comp_type::_set);
   }
 | "SAT" "(" label_rev "AND" label_rev "AND" label_rev "," label_rev ")"
   {

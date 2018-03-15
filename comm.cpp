@@ -59,14 +59,14 @@ data_struct *make_ds(type ty_, bool isArray, int sz){
 
 		case type::region:
 			if (isArray)
-				ret = new region[sz];
+				ret = new region[sz]();
 			else
 				ret = new region();
 			break;
 
 		case type::cube:
 			if (isArray)
-				ret = new cube_[sz];
+				ret = new cube_[sz]();
 			else
 				ret = new cube_();
 			break;

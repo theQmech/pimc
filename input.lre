@@ -4,9 +4,9 @@ cube cex cexprime cexprev
 index maxframes currframe stkptr i j
 $$
 
-SET(currframe, 0)
-SET(stkptr, 0)
-SET(maxframes, 100)
+currframe = 0
+stkptr = 0
+maxframes = 100
 CNF_ARR[currframe] = I
 
 SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
@@ -27,14 +27,14 @@ while(currframe < maxframes){
 
 		while(stkptr > 0){
 			if (currframe < 0){
-				return 1
+				return 0
 			}
 			else{
 				cex = CLS_ARR[stkptr]
-				SET(i, 1)
+				i = 1
 				while (i <= currframe){
 					CNF_ARR[i] ^= cex
-					++currframe
+					++i
 				}
 
 				cexprime = cex
@@ -55,8 +55,8 @@ while(currframe < maxframes){
 			}
 		}
 
-		SET(i, 0)
-		SET(j, 1)
+		i = 0
+		j = 1
 		while (i < currframe){
 			if(CNF_ARR[i] == CNF_ARR[j]){
 				return 1
@@ -67,11 +67,11 @@ while(currframe < maxframes){
 
 	}
 	else{
+		BREAK
 		++currframe
 	}
 }
 
 
-BREAK
 return 0
 

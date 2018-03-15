@@ -76,7 +76,8 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:
-			logAndStop("Breakpoint reached, run gdb to halt here");
+			cout<<"Lalalaalalal"<<endl;
+			// logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 
 		default:
@@ -120,38 +121,38 @@ void bool_node::compute(){
 			break;
 
 		case bool_op::_eq:
-			if (fetch_type(opd1) == type::index && v1 != -1)
-				result = (((index_ *)fetch_data(opd1))->getval() == v1);
+			if (fetch_type(opd1) == type::index && opd2.ty == opd_type::num)
+				result = (((index_ *)fetch_data(opd1))->getval() == opd2.val);
 			else
 				result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
 			break;
 
 		case bool_op::_gt:
-			if (v1 == -1)
+			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) > (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() > v1;
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() > opd2.val;
 			break;
 
 		case bool_op::_lt:
-			if (v1 == -1)
+			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) < (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() < v1;
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() < opd2.val;
 			break;
 
 		case bool_op::_ge:
-			if (v1 == -1)
+			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) >= (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() >= v1;
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() >= opd2.val;
 			break;
 
 		case bool_op::_le:
-			if (v1 == -1)
+			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) <= (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() <= v1;
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() <= opd2.val;
 			break;
 
 		default:
@@ -163,7 +164,10 @@ void bool_node::compute(){
 void comp_node::compute(){
 	switch(op){
 		case comp_type::_copy:
-			(*fetch_data(opd1)) = (*fetch_data(opd2));
+			if (opd2.ty == opd_type::num)
+				fetch_data(opd1)->set(opd2.val);
+			else
+				(*fetch_data(opd1)) = (*fetch_data(opd2));
 			break;
 
 		case comp_type::_conjunct:{
@@ -186,10 +190,6 @@ void comp_node::compute(){
 				((cube_ *)fetch_data(opd1))->toPrime(man_t.toPrime);
 			else
 				logAndStop("Should not reach here");
-			break;
-
-		case comp_type::_set:
-			fetch_data(opd1)->set(val);
 			break;
 
 		case comp_type::_sat:{

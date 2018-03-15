@@ -135,6 +135,7 @@ void cube_::operator=(const vector<lit> &init){
     assert(sanityCheck(init));
 
     nLits = init.size();
+    vLits.clear();
     vLits.insert(vLits.begin(), init.begin(), init.end());
 }
 
@@ -646,9 +647,10 @@ void solver::solve(data_struct &U){
         cex->clear();
     }
     else{
+        vector<lit> ret(vars.size());
         int *asgn = Sat_SolverGetModel(pSolver, &vars[0], vars.size());
         for(int i=0; i<vars.size(); ++i)
-            vars[i] = toLitCond(vars[i], !asgn[i]);
-        *cex = vars;
+            ret[i] = toLitCond(vars[i], !asgn[i]);
+        *cex = ret;
     }
 }
