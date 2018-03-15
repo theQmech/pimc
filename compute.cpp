@@ -15,23 +15,39 @@ data_struct *fetch_data(opd &opd_){
 		return symtab[opd_.val].data;
 	else if (opd_.ty == opd_type::arr){
 		assert(0<=opd_.idx && opd_.idx<ARR_SZ);
-		type ty = symtab[opd_.val].entry_type;
-		if (ty == type::region)
-			return &(((region *)symtab[opd_.val].data)[opd_.idx]);
-		else if (ty == type::cube)
-			return &(((cube_ *)symtab[opd_.val].data)[opd_.idx]);
+
+		region *reg = dynamic_cast<region *>(symtab[opd_.val].data);
+		cube_ *cub = dynamic_cast<cube_ *>(symtab[opd_.val].data);
+
+		index_ *idx = dynamic_cast<index_ *>(symtab[opd_.idx].data);
+		assert(idx);
+
+		if (reg)
+			return &reg[idx->getval()];
+		else if (cub)
+			return &cub[idx->getval()];
+		else
+			logAndStop("Should not reach here");
 	}
 	else
-		assert(false);
+		logAndStop("Should not reach here");
 }
 
-region *fetch_region(opd &opd_){
-	return &(((region *)symtab[opd_.val].data)[opd_.idx]);
-}
+// region *fetch_region(opd &opd_){
+// 	region *reg = dynamic_cast<region *>(symtab[opd_.val].data);
+// 	if (reg)
+// 		return &reg[opd_.idx];
+// 	else
+// 		logAndStop("Should not reach here");
+// }
 
-cube_ *fetch_cube(opd &opd_){
-	return &(((cube_ *)symtab[opd_.val].data)[opd_.idx]);
-}
+// cube_ *fetch_cube(opd &opd_){
+// 	cube_ *cub = dynamic_cast<cube_ *>(symtab[opd_.val].data);
+// 	if (cub)
+// 		return &cub[opd_.idx];
+// 	else
+// 		logAndStop("Should not reach here");
+// }
 
 void ast_node::compute(){
 	logAndStop("Not implemented");
@@ -57,6 +73,10 @@ void lre_node::compute(){
 				n2->compute();
 			else if (n3 != NULL)
 				n3->compute();
+			break;
+
+		case node_type::_break_:
+			logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 
 		default:
@@ -100,28 +120,38 @@ void bool_node::compute(){
 			break;
 
 		case bool_op::_eq:
-			if (fetch_type(opd1) == type::index){
-				if (v1 != -1)
-					result = ((*fetch_data(opd1)) == v1);
-			}
+			if (fetch_type(opd1) == type::index && v1 != -1)
+				result = (((index_ *)fetch_data(opd1))->getval() == v1);
 			else
 				result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
 			break;
 
 		case bool_op::_gt:
-			result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
+			if (v1 == -1)
+				result = ((*fetch_data(opd1)) > (*fetch_data(opd2)));
+			else
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() > v1;
 			break;
 
 		case bool_op::_lt:
-			result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
+			if (v1 == -1)
+				result = ((*fetch_data(opd1)) < (*fetch_data(opd2)));
+			else
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() < v1;
 			break;
 
 		case bool_op::_ge:
-			result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
+			if (v1 == -1)
+				result = ((*fetch_data(opd1)) >= (*fetch_data(opd2)));
+			else
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() >= v1;
 			break;
 
 		case bool_op::_le:
-			result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
+			if (v1 == -1)
+				result = ((*fetch_data(opd1)) <= (*fetch_data(opd2)));
+			else
+				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() <= v1;
 			break;
 
 		default:
@@ -137,16 +167,7 @@ void comp_node::compute(){
 			break;
 
 		case comp_type::_conjunct:{
-			type t1 = fetch_type(opd1), t2 = fetch_type(opd2);
-			if (t1 == type::cube && t1 == type::cube){
-				((cube_ *)fetch_data(opd1))->conjunct(*(cube_ *)fetch_data(opd2));
-			}
-			else if (t1 == type::region && t1 == type::cube)
-				((region *)fetch_data(opd1))->conjunct(*(cube_ *)fetch_data(opd2));
-			else if (t1 == type::region && t1 == type::region)
-				((region *)fetch_data(opd1))->conjunct(*(region *)fetch_data(opd2));
-			else
-				logAndStop("Should not reach here");
+			fetch_data(opd1)->conjunct(*fetch_data(opd2));
 			break;
 		}
 
@@ -174,32 +195,38 @@ void comp_node::compute(){
 		case comp_type::_sat:{
 			solver instSolver(man_t.AigNtk(), man_t.Network_Cnf());
 
-			if (fetch_type(opd1) == type::region)
-				instSolver.addRegion(*(region *)fetch_data(opd1));
-			else
-				instSolver.addAssumps(*(cube_ *)fetch_data(opd1));
-			if (fetch_type(opd1) == type::region)
-				instSolver.addRegion(*(region *)fetch_data(opd2));
-			else
-				instSolver.addAssumps(*(cube_ *)fetch_data(opd2));
-			if (fetch_type(opd1) == type::region)
-				instSolver.addRegion(*(region *)fetch_data(opd3));
-			else
-				instSolver.addAssumps(*(cube_ *)fetch_data(opd3));
+			instSolver.add(*fetch_data(opd1));
+			instSolver.add(*fetch_data(opd2));
+			instSolver.add(*fetch_data(opd3));
+			// if (fetch_type(opd1) == type::region)
+			// 	instSolver.addRegion(*(region *)fetch_data(opd1));
+			// else
+			// 	instSolver.addAssumps(*(cube_ *)fetch_data(opd1));
 
-			instSolver.solve(*(cube_ *)(fetch_data(opd4)));
+			// if (fetch_type(opd2) == type::region)
+			// 	instSolver.addRegion(*(region *)fetch_data(opd2));
+			// else
+			// 	instSolver.addAssumps(*(cube_ *)fetch_data(opd2));
+
+			// if (fetch_type(opd3) == type::region)
+			// 	instSolver.addRegion(*(region *)fetch_data(opd3));
+			// else
+			// 	instSolver.addAssumps(*(cube_ *)fetch_data(opd3));
+
+			instSolver.solve(*fetch_data(opd4));
 			break;
 		}
 
 		case comp_type::_smp:
-			if ((*(region *)fetch_data(opd1)) == (*(region *)fetch_data(opd2)))
-				((cube_ *)fetch_data(opd3))->clear();
-			else
-				*((cube_ *)fetch_data(opd3)) = cube_(vector<lit>(1,-1));
+			logAndStop("Not implemented, use == operator");
+			// if ((*(region *)fetch_data(opd1)) == (*(region *)fetch_data(opd2)))
+			// 	((cube_ *)fetch_data(opd3))->clear();
+			// else
+			// 	*((cube_ *)fetch_data(opd3)) = vector<lit>(1,-1);
 			break;
 
 		case comp_type::_return:
-			if (val)
+			if (val == 0)
 				global_ret_value = _result::UNSAT;
 			else
 				global_ret_value = _result::SAT;

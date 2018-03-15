@@ -1,6 +1,6 @@
 use_clauses
 region
-cube cex cexprime cexprev notP
+cube cex cexprime cexprev
 index maxframes currframe stkptr i j
 $$
 
@@ -16,7 +16,7 @@ if (cex){
 	return 0
 }
 
---currframe
+++currframe
 while(currframe < maxframes){
 	SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
 	if (cex){
@@ -58,10 +58,11 @@ while(currframe < maxframes){
 		SET(i, 0)
 		SET(j, 1)
 		while (i < currframe){
-			SMP(CNF_ARR[i], CNF_ARR[j], cex)
-			if (!cex){
+			if(CNF_ARR[i] == CNF_ARR[j]){
 				return 1
 			}
+			++i
+			++j
 		}
 
 	}
@@ -70,5 +71,7 @@ while(currframe < maxframes){
 	}
 }
 
+
+BREAK
 return 0
 

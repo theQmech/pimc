@@ -36,8 +36,8 @@ extern InfoMan man_t;
 
 void toPrime(cube_ &U);
 void toPrime(region &U);
-cube_ getProperty();
-region getT();
-region getInit();
+void InitProperty(cube_ &U);
+void initTransition(region &U);
+void initInitStates(region &u);
 
 #endif

@@ -8,6 +8,7 @@ _result global_ret_value = _result::UNDEF;
 
 void fillsymbols(){
 	symtab.addsymbol(type::cube, "P");
+	symtab.addsymbol(type::cube, "notP");
 	symtab.addsymbol(type::region, "T");
 	symtab.addsymbol(type::region, "I");
 
@@ -17,9 +18,18 @@ void fillsymbols(){
 
 void initsymbols(){
 	// TODO: Copy vals
-	*(symtab[symtab.get_symbol("P")].data) = getProperty();
-	*(symtab[symtab.get_symbol("T")].data) = getT();
-	*(symtab[symtab.get_symbol("I")].data) = getInit();
+	// doesn not work
+
+	cube_ P;
+	InitProperty(P);
+	*(symtab[symtab.get_symbol("P")].data) = P;
+	*(symtab[symtab.get_symbol("notP")].data) = P;
+	((cube_ *)symtab[symtab.get_symbol("notP")].data)->complement();
+
+	region T, I;
+	initTransition(T); initInitStates(I);
+	*(symtab[symtab.get_symbol("T")].data) = T;
+	*(symtab[symtab.get_symbol("I")].data) = I;
 }
 
 int main(int argc, char *argv[]){
@@ -54,6 +64,8 @@ int main(int argc, char *argv[]){
 		std::cerr<<"Parsing fail"<<std::endl;
 		return 1;
 	}
+
+	std::cout<<"---------------------------------------------"<<endl<<endl<<endl;
 
 	driver.root->compute();
 

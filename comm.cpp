@@ -4,6 +4,34 @@
 data_struct::~data_struct(){
 }
 
+void data_struct::operator=(data_struct &init){
+	logAndStop("Not implemented");
+}
+
+bool data_struct::operator==(data_struct &init){
+	logAndStop("Not implemented");
+}
+
+bool data_struct::operator>(data_struct &init){
+	logAndStop("Not implemented");
+}
+
+bool data_struct::operator>=(data_struct &init){
+	logAndStop("Not implemented");
+}
+
+bool data_struct::operator<(data_struct &init){
+	logAndStop("Not implemented");
+}
+
+bool data_struct::operator<=(data_struct &init){
+	logAndStop("Not implemented");
+}
+
+void data_struct::conjunct(data_struct &rhs){
+	logAndStop("Not implemented");
+}
+
 data_struct::operator bool() const{
 	logAndStop("Not implemented");
 }

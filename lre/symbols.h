@@ -3,7 +3,7 @@
 
 #include <string>
 
-enum class node_type {empty, compose, while_stmt, if_stmt};
+enum class node_type {empty, compose, while_stmt, if_stmt, _break_};
 enum class opd_type {num, var, arr};
 enum class bool_op {_or, _and, _not, _cast, _eq, _gt, _lt, _ge, _le};
 enum class comp_type {_copy, _conjunct, _inc, _dec, _prime, _set, _sat, _smp, _return};
@@ -13,7 +13,7 @@ public:
 	opd_type ty;
 	// index into symbol table entry or numeric value
 	int val;
-	// index into array (if symbol is an array)
+	// if array, then index of indexing variable contained in symbol table
 	int idx;
 	opd();
 	opd(int, opd_type);

@@ -17,17 +17,21 @@ int readAig(Abc_Frame_t *pAbc, string fileName){
 
     RUN_CMD(pAbc, "read " + string(fileName)); // read the file
     RUN_CMD(pAbc, "print_stats "); // print the numer of i/o latch and and gates
-    RUN_CMD(pAbc, "balance"); // balance and cleanup
 
-    // The next few commands try to reduce the size of the network, remove
-    // dangling nodes, refactor and fraig the network
-    RUN_CMD(pAbc, "scleanup"); // Remove dangling nodes
-    if (fUseResyn2) // Copied from demo.c file
-        RUN_CMD(pAbc, "balance; rewrite -l; refactor -l; balance; rewrite -l; rewrite -lz; balance; refactor -lz; rewrite -lz; balance");
-    else
-        RUN_CMD(pAbc, "balance; rewrite -l; rewrite -lz; balance; rewrite -lz; balance");
-    RUN_CMD(pAbc, "fraig");
-    RUN_CMD(pAbc, "print_stats");
+    // Following commands may modify network, sometimes even removing latches
+    // (pdtvisgray0.aig). Keep them commented for now.
+
+    // RUN_CMD(pAbc, "balance"); // balance and cleanup
+
+    // // The next few commands try to reduce the size of the network, remove
+    // // dangling nodes, refactor and fraig the network
+    // RUN_CMD(pAbc, "scleanup"); // Remove dangling nodes
+    // if (fUseResyn2) // Copied from demo.c file
+    //     RUN_CMD(pAbc, "balance; rewrite -l; refactor -l; balance; rewrite -l; rewrite -lz; balance; refactor -lz; rewrite -lz; balance");
+    // else
+    //     RUN_CMD(pAbc, "balance; rewrite -l; rewrite -lz; balance; rewrite -lz; balance");
+    // RUN_CMD(pAbc, "fraig");
+    // RUN_CMD(pAbc, "print_stats");
 
     return 0;
 }
@@ -105,26 +109,33 @@ cube_::cube_(){
  *                  Must satisfy the data structure invariant.
  */
 cube_::cube_(const vector<lit> &U){
-    assert(sanityCheck(U));
-
-    nLits = U.size();
-    vLits.insert(vLits.begin(), U.begin(), U.end());
+    *this = U;
 }
 
 /*! Copy constructor. Initialize cube_ given as argument.
  *  @param[in]  init   cube_ to be initalized from.
  */
-cube_::cube_(const cube_ &init){
+cube_::cube_(cube_ &init){
     *this = init;
 }
 
 /*! Assignment operator.
  *  @param[in]  init   cube_ to be initalized from.
  */
-void cube_::operator=(const cube_ &init){
-    nLits = init.nLits;
+void cube_::operator=(data_struct &init){
+    cube_ *rhs = dynamic_cast<cube_ *>(&init);
+    assert(rhs);
+
+    nLits = rhs->nLits;
     vLits.clear();
-    vLits.insert(vLits.begin(), init.vLits.begin(), init.vLits.end());
+    vLits.insert(vLits.begin(), rhs->vLits.begin(), rhs->vLits.end());
+}
+
+void cube_::operator=(const vector<lit> &init){
+    assert(sanityCheck(init));
+
+    nLits = init.size();
+    vLits.insert(vLits.begin(), init.begin(), init.end());
 }
 
 /*! Clears the cube_. The resulting cube_ is empty and a tautology.
@@ -136,8 +147,8 @@ void cube_::clear(){
 
 /*! Dummy function. DO NOT USE FOR NOW. Will be implemented later if needed.
  */
-void cube_::conjunct(const cube_ &U){
-    assert(false);
+void cube_::conjunct(data_struct &U){
+    logAndStop("Not implemented. Will be implemented later");
 
     // nLits += U.nLits;
     // vLits.insert(vLits.end(), U.vLits.begin(), U.vLits.end());
@@ -183,12 +194,15 @@ cube_::operator bool() const{
  *  @param[in]  A   The first cube_
  *  @param[in]  B   The second cube_
  */
-bool operator==(const cube_ &A, const cube_ &B){
-    if (A.nLits != B.nLits)
+bool cube_::operator==(data_struct &U){
+    cube_ *rhs = dynamic_cast<cube_ *>(&U);
+    assert(rhs);
+
+    if (nLits != rhs->nLits)
         return false;
 
-    for(int i=0; i<A.nLits; ++i){
-        if (A.vLits[i] != B.vLits[i])
+    for(int i=0; i<nLits; ++i){
+        if (vLits[i] != rhs->vLits[i])
             return false;
     }
 
@@ -221,22 +235,7 @@ region::region(){
  *  @param[in]  pCnf    Pointer to valid Cnf_Dat_t.
  */
 region::region(Cnf_Dat_t *pCnf){
-    assert(pCnf);
-    //TODO Sanity Check
-
-    nClauses = nLits = 0;
-    nVars = pCnf->nVars;
-    vClauses.resize(pCnf->nClauses, vector<lit>());
-    for(int i=0; i<vClauses.size(); ++i){
-        vClauses[i].resize(pCnf->pClauses[i+1]-pCnf->pClauses[i], -1);
-        for(int j=0; j<vClauses[i].size(); ++j){
-            vClauses[i][j] = pCnf->pClauses[i][j];
-            nLits++;
-        }
-        nClauses++;
-    }
-    assert(nLits == pCnf->nLiterals);
-    assert(nClauses == pCnf->nClauses);
+    *this = pCnf;
 }
 
 /*! Copy/Initialization function.
@@ -282,9 +281,32 @@ region::region(const region &init){
 /*! Assignment operator
  *  @param[in] init     region to be copied from
  */
-void region::operator=(const region&init){
-    initialize(init.vClauses, init.nVars);
+void region::operator=(data_struct &init){
+    region *rhs = dynamic_cast<region *>(&init);
+    assert(rhs);
+
+    initialize(rhs->vClauses, rhs->nVars);
 }
+
+void region::operator=(Cnf_Dat_t *pCnf){
+    assert(pCnf);
+    //TODO Sanity Check
+
+    nClauses = nLits = 0;
+    nVars = pCnf->nVars;
+    vClauses.resize(pCnf->nClauses, vector<lit>());
+    for(int i=0; i<vClauses.size(); ++i){
+        vClauses[i].resize(pCnf->pClauses[i+1]-pCnf->pClauses[i], -1);
+        for(int j=0; j<vClauses[i].size(); ++j){
+            vClauses[i][j] = pCnf->pClauses[i][j];
+            nLits++;
+        }
+        nClauses++;
+    }
+    assert(nLits == pCnf->nLiterals);
+    assert(nClauses == pCnf->nClauses);
+}
+
 
 /*! Add a clause to the CNF, treating the argument as clause to be added
  *  @param[in]  tmp     Vector to be added as clause. Has to be sorted and
@@ -308,27 +330,45 @@ void region::addClause(vector<lit> tmp, bool negate){
     nClauses++;
 }
 
-/*! Add a negation of the cube_ to the CNF. Equivalent to region <- region ^ !U
- *  Useful when adding negation of counterexample to a CNF.
- *  @param[in]  U     cube_ whose negation is to be conjucted.
- */
-void region::conjunct(const cube_ &U){
-    addClause(U.vLits, true);
+void region::conjunct(data_struct &U){
+    region *reg = dynamic_cast<region *>(&U);
+    cube_ *cub = dynamic_cast<cube_ *>(&U);
+
+    if (reg){
+        vClauses.resize(nClauses + reg->nClauses, vector<lit>());
+        for(int i=0; i<reg->nClauses; ++i)
+            vClauses[nClauses+i] = reg->vClauses[i];
+
+        nClauses += reg->nClauses;
+        nLits += reg->nLits;
+    }
+    else if (cub)
+        addClause(cub->vLits, true);
+    else
+        logAndStop("Should not reach here");
 }
 
-/*! Conjunct a CNF.
- *  @param[in]  U     region to be conjucted.
- */
-void region::conjunct(const region &U){
-    // TODO: check if each clause should be added or not
+// /*! Add a negation of the cube_ to the CNF. Equivalent to region <- region ^ !U
+//  *  Useful when adding negation of counterexample to a CNF.
+//  *  @param[in]  U     cube_ whose negation is to be conjucted.
+//  */
+// void region::conjunct(const cube_ &U){
+//     addClause(U.vLits, true);
+// }
 
-    vClauses.resize(nClauses+U.nClauses, vector<lit>());
-    for(int i=0; i<U.nClauses; ++i)
-        vClauses[nClauses+i] = U.vClauses[i];
+// ! Conjunct a CNF.
+//  *  @param[in]  U     region to be conjucted.
 
-    nClauses += U.nClauses;
-    nLits += U.nLits;
-}
+// void region::conjunct(const region &U){
+//     // TODO: check if each clause should be added or not
+
+//     vClauses.resize(nClauses+U.nClauses, vector<lit>());
+//     for(int i=0; i<U.nClauses; ++i)
+//         vClauses[nClauses+i] = U.vClauses[i];
+
+//     nClauses += U.nClauses;
+//     nLits += U.nLits;
+// }
 
 /*! Casting operator to bool. The region is interpreted as the result of a call
  *  to SAT solver.
@@ -421,17 +461,26 @@ void region::toPrime(unordered_map<int, int> &toPrimeMap){
     }
 }
 
-/*! Checks logical equivalence of the two regions.
- *  @param[in]      A   region 1
- *  @param[in]      B   region 2
- *  @return             true if regions are logically equivalent.
- *  Internally checks if A implies B and B implies A.
- */
-bool operator==(const region &A, const region &B){
-    if (!A.implies(B))
+bool region::operator==(data_struct &init){
+    region * rhs = dynamic_cast<region *>(&init);
+    assert(rhs);
+
+    if (!(this->implies(*rhs)))
         return false;
-    return B.implies(A);
+    return rhs->implies(*this);
 }
+
+// ! Checks logical equivalence of the two regions.
+//  *  @param[in]      A   region 1
+//  *  @param[in]      B   region 2
+//  *  @return             true if regions are logically equivalent.
+//  *  Internally checks if A implies B and B implies A.
+
+// bool operator==(const region &A, const region &B){
+//     if (!A.implies(B))
+//         return false;
+//     return B.implies(A);
+// }
 
 //! @return     Value of the index.
 int index_::getval(){
@@ -457,28 +506,62 @@ void index_::operator++(){
 
 //! Decrement the index.
 void index_::operator--(){
+    assert(val > 0);
     --val;
 }
 
 //! Copy constructor
 //! @param[in]      v       index_ to be copied from
-void index_::operator=(const index_ &v){
-    val = v.val;
+void index_::operator=(data_struct &v){
+    index_ *rhs = dynamic_cast<index_ *>(&v);
+    assert(rhs);
+
+    val = rhs->val;
 }
 
-//! Comparator operator for index_
-//! @param[in]      v       index_ to be compared with
-//! @return                 true iff self value is less.
-bool index_::operator<(const index_ &v){
-    return (val<v.val);
+bool index_::operator==(data_struct &v){
+    index_ *rhs = dynamic_cast<index_ *>(&v);
+    assert(rhs);
+    return (val == rhs->val);
 }
 
-//! Check equality for index_
-//! @param[in]      v       index_ to be compared with
-//! @return                 true iff self value is equal.
-bool index_::operator==(const index_ &v){
-    return (val == v.val);
+bool index_::operator>(data_struct &v){
+    index_ *rhs = dynamic_cast<index_ *>(&v);
+    assert(rhs);
+    return (val > rhs->val);
 }
+
+bool index_::operator>=(data_struct &v){
+    index_ *rhs = dynamic_cast<index_ *>(&v);
+    assert(rhs);
+    return (val >= rhs->val);
+}
+
+bool index_::operator<(data_struct &v){
+    index_ *rhs = dynamic_cast<index_ *>(&v);
+    assert(rhs);
+    return (val < rhs->val);
+}
+
+bool index_::operator<=(data_struct &v){
+    index_ *rhs = dynamic_cast<index_ *>(&v);
+    assert(rhs);
+    return (val <= rhs->val);
+}
+
+// //! Comparator operator for index_
+// //! @param[in]      v       index_ to be compared with
+// //! @return                 true iff self value is less.
+// bool index_::operator<(const index_ &v){
+//     return (val<v.val);
+// }
+
+// //! Check equality for index_
+// //! @param[in]      v       index_ to be compared with
+// //! @return                 true iff self value is equal.
+// bool index_::operator==(const index_ &v){
+//     return (val == v.val);
+// }
 
 //! Cast to bool. Interpreted as true for nonzero values only.
 index_::operator bool() const{
@@ -518,24 +601,38 @@ void solver::clearAssumps(){
     assumps.clear();
 }
 
-//! Add to list of assumptions to be made by solver while solving.
-//! @param[in]      U       cube_ containing list of assumptions to be added.
-void solver::addAssumps(const cube_ &U){
-    assumps.insert(assumps.end(), U.vLits.begin(), U.vLits.end());
+void solver::add(data_struct &U){
+    region *reg = dynamic_cast<region *>(&U);
+    cube_ *cub = dynamic_cast<cube_ *>(&U);
+
+    if (reg)
+        reg->addToSolver(pSolver);
+    else if (cub)
+        assumps.insert(assumps.end(), cub->vLits.begin(), cub->vLits.end());
+    else
+        logAndStop("Should not reach here");
 }
 
-//! Adds a region(CNF) to the solver.
-//! @param[in]      U       region to be added.
-void solver::addRegion(const region &U){
-    U.addToSolver(pSolver);
-}
+// //! Add to list of assumptions to be made by solver while solving.
+// //! @param[in]      U       cube_ containing list of assumptions to be added.
+// void solver::addAssumps(const cube_ &U){
+//     assumps.insert(assumps.end(), U.vLits.begin(), U.vLits.end());
+// }
+
+// //! Adds a region(CNF) to the solver.
+// //! @param[in]      U       region to be added.
+// void solver::addRegion(const region &U){
+//     U.addToSolver(pSolver);
+// }
 
 //! if SAT, returns an assignment of non prime variables
 //! Solve with the current list of assumptions. Throws error if undefined result
 //! is returned by solver.
 //! @param[out]     cex         Assignment of all registers(latch outputs) in
 //!                             counterexample.
-void solver::solve(cube_ &cex){
+void solver::solve(data_struct &U){
+    cube_ *cex = dynamic_cast<cube_ *>(&U);
+
     int status = sat_solver_solve(pSolver,
                     &assumps[0], &assumps[0] + assumps.size(),
                     (ABC_INT64_T)0, (ABC_INT64_T)0,
@@ -546,12 +643,12 @@ void solver::solve(cube_ &cex){
         assert(false);
     }
     else if (status == l_False){
-        cex.clear();
+        cex->clear();
     }
     else{
         int *asgn = Sat_SolverGetModel(pSolver, &vars[0], vars.size());
         for(int i=0; i<vars.size(); ++i)
             vars[i] = toLitCond(vars[i], !asgn[i]);
-        cex = cube_(vars);
+        *cex = vars;
     }
 }

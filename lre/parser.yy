@@ -73,13 +73,14 @@ class lre_driver;
   SMP           "SMP"
   CNFARR        "CNF_ARR"
   CLSARR        "CLS_ARR"
+  BREAK         "BREAK"
   SEPARATOR     "%%"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 %type <opd> label_rev num_opd;
-%type <ast_node *> body while_block if_block exp bool;
+%type <ast_node *> body breakpoint while_block if_block exp bool;
 %type <type> type_ds decl;
 
 // %printer { yyoutput << (void *)$$; } <*>;
@@ -128,9 +129,14 @@ type_ds:
 
 body:
   %empty                      { $$ = new lre_node(node_type::empty);}
+| body breakpoint             { $$ = new lre_node($1, $2, node_type::compose); }
 | body while_block            { $$ = new lre_node($1, $2, node_type::compose); }
 | body if_block               { $$ = new lre_node($1, $2, node_type::compose); }
 | body exp                    { $$ = new lre_node($1, $2, node_type::compose); }
+;
+
+breakpoint:
+  "BREAK"                     { $$ = new lre_node(NULL, NULL, node_type::_break_); }
 ;
 
 while_block:

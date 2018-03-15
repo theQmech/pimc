@@ -75,6 +75,7 @@ blank [ \t]
 "SMP"           return yy::lre_parser::make_SMP(loc);
 "CNF_ARR"       return yy::lre_parser::make_CNFARR(loc);
 "CLS_ARR"       return yy::lre_parser::make_CLSARR(loc);
+"BREAK"         return yy::lre_parser::make_BREAK(loc);
 
 {int}      {
   errno = 0;

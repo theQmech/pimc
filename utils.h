@@ -53,17 +53,18 @@ public:
 
     cube_();
     cube_(const vector<lit> &U);
-    cube_(const cube_ &init);
-    void operator=(const cube_ &init);
+    cube_(cube_ &init);
+    void operator=(data_struct &init);
+    void operator=(const vector<lit> &init);
 
     void clear();
-    void conjunct(const cube_ &U);
+    void conjunct(data_struct &U);
     void complement();
     void toPrime(unordered_map<lit, lit> &toPrimeMap);
 
     operator bool() const;
+    bool operator==(data_struct &init);
 };
-bool operator==(const cube_ &A, const cube_ &B);
 
 /*! Data structure holding a CNF formula. Internally is stored as a vector of
  *  vectors.
@@ -87,10 +88,11 @@ public:
     void initialize(vector<vector<lit>> init, int nVars_);
     region(vector<vector<lit>> init, int nVars_);
     region(const region &init);
-    void operator=(const region &init);
+    void operator=(data_struct &init);
+    void operator=(Cnf_Dat_t *pCnf);
     void addClause(vector<lit> tmp, bool negate);
-    void conjunct(const cube_ &U);
-    void conjunct(const region &U);
+    void conjunct(data_struct &U);
+    // void conjunct(const region &U);
 
     operator bool() const;
     vector<lit> operator[](int i) const;
@@ -99,8 +101,8 @@ public:
     bool implies(const region &B) const;
     void addToSolver(sat_solver *pSolver) const;
     void toPrime(unordered_map<lit, lit> &toPrimeMap);
+    bool operator==(data_struct &init);
 };
-bool operator==(const region &A, const region &B);
 
 /*! Data structure for the index.
  */
@@ -113,9 +115,12 @@ public:
     void set(int val_);
     void operator++();
     void operator--();
-    void operator=(const index_ &v);
-    bool operator<(const index_ &v);
-    bool operator==(const index_ &v);
+    void operator=(data_struct &v);
+    bool operator==(data_struct &v);
+    bool operator>(data_struct &v);
+    bool operator>=(data_struct &v);
+    bool operator<(data_struct &v);
+    bool operator<=(data_struct &v);
 
     operator bool() const;
 };
@@ -132,10 +137,11 @@ public:
     ~solver();
     void reset();
 
+    void add(data_struct &U);
     void clearAssumps();
-    void addAssumps(const cube_ &U);
-    void addRegion(const region &U);
-    void solve(cube_ &cex);
+    // void addAssumps(const cube_ &U);
+    // void addRegion(const region &U);
+    void solve(data_struct &U);
 };
 
 #endif

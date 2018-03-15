@@ -4,7 +4,7 @@ void handle_exit(){
     if (global_ret_value == _result::SAT)
         std::cout<<"Result: SAT"<<std::endl;
     else if (global_ret_value == _result::UNSAT)
-        std::cout<<"Result: UNSAT"<<std::endl;
+        std::cout<<"Result: UNS"<<std::endl;
     else if (global_ret_value == _result::UNDEF)
         std::cout<<"Result: UNDEF"<<std::endl;
 
@@ -14,7 +14,8 @@ void handle_exit(){
 }
 
 void assignWithInit(region &U){
-    U = region(man_t.cInit, man_t.Network_Cnf()->nVars);
+    region tmp(man_t.cInit, man_t.Network_Cnf()->nVars);
+    U = tmp;
 }
 
 //! For each primed(nonprimed) literal, flip to its nonprimed(primed) version.
@@ -29,7 +30,13 @@ void toPrime(cube_ &U){
 //! to true.
 cube_ getProperty(){
     vector<lit> tmp(1, toLitCond(man_t.getP(), 0));
-    return cube_(tmp);
+    cube_ ret(tmp);
+    return ret;
+}
+
+void InitProperty(cube_ &U){
+    U.nLits = 1;
+    U.vLits = vector<lit>(1, toLitCond(man_t.getP(), 1));
 }
 
 //! @return Region which represents the transition function in CNF form.
@@ -39,9 +46,17 @@ region getT(){
     assert(false);
 }
 
+void initTransition(region &U){
+    U = man_t.Network_Cnf();
+}
+
 //! @return Initial states in the form of a region(CNF).
 region getInit(){
     return region(man_t.cInit, man_t.Network_Cnf()->nVars);
+}
+
+void initInitStates(region &U){
+    U.initialize(man_t.cInit, man_t.Network_Cnf()->nVars);
 }
 
 /*! Empty constructor.
@@ -86,6 +101,7 @@ void InfoMan::load_network(Abc_Frame_t *pAbc){
     cInit.resize(Aig_ManRegNum(pAig), vector<int>(1, -1));
     int i=0, j=0;
     Abc_Obj_t *pLatch;
+    cout<<"Num regs:\t"<<pAig->nRegs<<endl;
     cout<<"Init state:\t";
     Abc_NtkForEachLatch(pNtk, pLatch, i){
         cInit[j][0] = toLitCond(
@@ -111,9 +127,3 @@ void InfoMan::load_network(Abc_Frame_t *pAbc){
 lit InfoMan::getP(){
     return pCnf->pVarNums[Aig_ObjId(Aig_ManCo(pAig, 0))];
 }
-
-// // DELETE THIS!
-// int main(){
-//     cout<<__FILE__<<endl;
-//     return 0;
-// }
