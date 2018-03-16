@@ -33,22 +33,6 @@ data_struct *fetch_data(opd &opd_){
 		logAndStop("Should not reach here");
 }
 
-// region *fetch_region(opd &opd_){
-// 	region *reg = dynamic_cast<region *>(symtab[opd_.val].data);
-// 	if (reg)
-// 		return &reg[opd_.idx];
-// 	else
-// 		logAndStop("Should not reach here");
-// }
-
-// cube_ *fetch_cube(opd &opd_){
-// 	cube_ *cub = dynamic_cast<cube_ *>(symtab[opd_.val].data);
-// 	if (cub)
-// 		return &cub[opd_.idx];
-// 	else
-// 		logAndStop("Should not reach here");
-// }
-
 void ast_node::compute(){
 	logAndStop("Not implemented");
 }
@@ -76,8 +60,7 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:
-			cout<<"Lalalaalalal"<<endl;
-			// logAndStop("Breakpoint reached, run gdb to halt here");
+			logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 
 		default:
@@ -198,38 +181,16 @@ void comp_node::compute(){
 			instSolver.add(*fetch_data(opd1));
 			instSolver.add(*fetch_data(opd2));
 			instSolver.add(*fetch_data(opd3));
-			// if (fetch_type(opd1) == type::region)
-			// 	instSolver.addRegion(*(region *)fetch_data(opd1));
-			// else
-			// 	instSolver.addAssumps(*(cube_ *)fetch_data(opd1));
-
-			// if (fetch_type(opd2) == type::region)
-			// 	instSolver.addRegion(*(region *)fetch_data(opd2));
-			// else
-			// 	instSolver.addAssumps(*(cube_ *)fetch_data(opd2));
-
-			// if (fetch_type(opd3) == type::region)
-			// 	instSolver.addRegion(*(region *)fetch_data(opd3));
-			// else
-			// 	instSolver.addAssumps(*(cube_ *)fetch_data(opd3));
 
 			instSolver.solve(*fetch_data(opd4));
 			break;
 		}
 
-		case comp_type::_smp:
-			logAndStop("Not implemented, use == operator");
-			// if ((*(region *)fetch_data(opd1)) == (*(region *)fetch_data(opd2)))
-			// 	((cube_ *)fetch_data(opd3))->clear();
-			// else
-			// 	*((cube_ *)fetch_data(opd3)) = vector<lit>(1,-1);
-			break;
-
 		case comp_type::_return:
 			if (val == 0)
-				global_ret_value = _result::UNSAT;
-			else
 				global_ret_value = _result::SAT;
+			else
+				global_ret_value = _result::UNSAT;
 			handle_exit();
 			break;
 

@@ -69,7 +69,6 @@ class lre_driver;
   eq            "eq"
   ne            "ne"
   SAT           "SAT"
-  SMP           "SMP"
   CNFARR        "CNF_ARR"
   CLSARR        "CLS_ARR"
   BREAK         "BREAK"

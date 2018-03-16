@@ -71,7 +71,6 @@ blank [ \t]
 "=="            return yy::lre_parser::make_eq(loc);
 "!="            return yy::lre_parser::make_ne(loc);
 "SAT"           return yy::lre_parser::make_SAT(loc);
-"SMP"           return yy::lre_parser::make_SMP(loc);
 "CNF_ARR"       return yy::lre_parser::make_CNFARR(loc);
 "CLS_ARR"       return yy::lre_parser::make_CLSARR(loc);
 "BREAK"         return yy::lre_parser::make_BREAK(loc);

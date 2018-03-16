@@ -25,6 +25,7 @@ while(currframe < maxframes){
 		CLS_ARR[stkptr] = cex
 		--currframe
 
+		# BREAK
 		while(stkptr > 0){
 			if (currframe < 0){
 				return 0
@@ -64,10 +65,8 @@ while(currframe < maxframes){
 			++i
 			++j
 		}
-
 	}
 	else{
-		BREAK
 		++currframe
 	}
 }

@@ -126,9 +126,7 @@ void cube_::operator=(data_struct &init){
     cube_ *rhs = dynamic_cast<cube_ *>(&init);
     assert(rhs);
 
-    nLits = rhs->nLits;
-    vLits.clear();
-    vLits.insert(vLits.begin(), rhs->vLits.begin(), rhs->vLits.end());
+    *this = rhs->vLits;
 }
 
 void cube_::operator=(const vector<lit> &init){
@@ -349,34 +347,6 @@ void region::conjunct(data_struct &U){
         logAndStop("Should not reach here");
 }
 
-// /*! Add a negation of the cube_ to the CNF. Equivalent to region <- region ^ !U
-//  *  Useful when adding negation of counterexample to a CNF.
-//  *  @param[in]  U     cube_ whose negation is to be conjucted.
-//  */
-// void region::conjunct(const cube_ &U){
-//     addClause(U.vLits, true);
-// }
-
-// ! Conjunct a CNF.
-//  *  @param[in]  U     region to be conjucted.
-
-// void region::conjunct(const region &U){
-//     // TODO: check if each clause should be added or not
-
-//     vClauses.resize(nClauses+U.nClauses, vector<lit>());
-//     for(int i=0; i<U.nClauses; ++i)
-//         vClauses[nClauses+i] = U.vClauses[i];
-
-//     nClauses += U.nClauses;
-//     nLits += U.nLits;
-// }
-
-/*! Casting operator to bool. The region is interpreted as the result of a call
- *  to SAT solver.
- *  - A non empty region implies a successfull counterexample returned by SAT
- *    solver and is interpreted as True.
- *  - An empty region is treated as False.
- */
 region::operator bool() const{
     if (vClauses.size() == 0)
         return false;
@@ -471,18 +441,6 @@ bool region::operator==(data_struct &init){
     return rhs->implies(*this);
 }
 
-// ! Checks logical equivalence of the two regions.
-//  *  @param[in]      A   region 1
-//  *  @param[in]      B   region 2
-//  *  @return             true if regions are logically equivalent.
-//  *  Internally checks if A implies B and B implies A.
-
-// bool operator==(const region &A, const region &B){
-//     if (!A.implies(B))
-//         return false;
-//     return B.implies(A);
-// }
-
 //! @return     Value of the index.
 int index_::getval(){
     return val;
@@ -550,20 +508,6 @@ bool index_::operator<=(data_struct &v){
     return (val <= rhs->val);
 }
 
-// //! Comparator operator for index_
-// //! @param[in]      v       index_ to be compared with
-// //! @return                 true iff self value is less.
-// bool index_::operator<(const index_ &v){
-//     return (val<v.val);
-// }
-
-// //! Check equality for index_
-// //! @param[in]      v       index_ to be compared with
-// //! @return                 true iff self value is equal.
-// bool index_::operator==(const index_ &v){
-//     return (val == v.val);
-// }
-
 //! Cast to bool. Interpreted as true for nonzero values only.
 index_::operator bool() const{
     return !(val == 0);
@@ -613,18 +557,6 @@ void solver::add(data_struct &U){
     else
         logAndStop("Should not reach here");
 }
-
-// //! Add to list of assumptions to be made by solver while solving.
-// //! @param[in]      U       cube_ containing list of assumptions to be added.
-// void solver::addAssumps(const cube_ &U){
-//     assumps.insert(assumps.end(), U.vLits.begin(), U.vLits.end());
-// }
-
-// //! Adds a region(CNF) to the solver.
-// //! @param[in]      U       region to be added.
-// void solver::addRegion(const region &U){
-//     U.addToSolver(pSolver);
-// }
 
 //! if SAT, returns an assignment of non prime variables
 //! Solve with the current list of assumptions. Throws error if undefined result
