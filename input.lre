@@ -55,22 +55,18 @@ while(currframe < maxframes){
 
 			}
 		}
-
-		i = 0
-		j = 1
-		while (i < currframe){
-			if(CNF_ARR[i] == CNF_ARR[j]){
-				return 1
-			}
-			++i
-			++j
-		}
 	}
 	else{
 		++currframe
 	}
+	i = 0
+	j = 1
+	while (i < currframe){
+		if(CNF_ARR[i] == CNF_ARR[j]){
+			return 1
+		}
+		++i
+		++j
+	}
 }
-
-
 return 0
-
