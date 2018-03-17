@@ -130,9 +130,9 @@ public:
 //! function addRegion, and single literals in the form of cube_ via addAssumps.
 class solver{
     sat_solver *pSolver;
-    vector<lit> assumps;
     vector<int> vars;
 public:
+    vector<lit> assumps;
     solver(Aig_Man_t *pNtk, Cnf_Dat_t *pCnf);
     ~solver();
     void reset();

@@ -6,7 +6,7 @@
 enum class node_type {empty, compose, while_stmt, if_stmt, _break_};
 enum class opd_type {num, var, arr};
 enum class bool_op {_or, _and, _not, _cast, _eq, _gt, _lt, _ge, _le};
-enum class comp_type {_copy, _conjunct, _inc, _dec, _prime, _sat, _smp, _return};
+enum class comp_type {_size, _access, _copy, _conjunct, _inc, _dec, _prime, _prop, _sat, _smp, _return};
 
 class opd{
 public:

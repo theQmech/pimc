@@ -20,6 +20,7 @@ public:
 
   std::map<std::string, int> variables;
   int result;
+  int err = 0;
   ast_node *root;
   DS DS_used;
 

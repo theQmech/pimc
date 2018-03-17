@@ -45,6 +45,8 @@ class lre_driver;
   PRIME         "PRIME"
   RETURN        "RETURN"
   REGION        "REGION"
+  PROP          "PROP"
+  SIZE          "SIZE"
   CUBE          "CUBE"
   INDEX         "INDEX"
   IF            "IF"
@@ -237,6 +239,16 @@ exp:
       yy::lre_parser::error(@$, "unequal data types");
     $$ = new comp_node($1, $3, comp_type::_copy);
   }
+| label_rev "=" label_rev "[" label_rev "]"
+  {
+    if (symtab[$1.val].entry_type != type::cube)
+      yy::lre_parser::error(@1, "unequal data types");
+    if (symtab[$3.val].entry_type != type::region)
+      yy::lre_parser::error(@3, "unequal data types");
+    if (symtab[$5.val].entry_type != type::index)
+      yy::lre_parser::error(@5, "unequal data types");
+    $$ = new comp_node($1, $3, $5, comp_type::_access);
+  }
 | label_rev "=" num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
@@ -263,6 +275,14 @@ exp:
       yy::lre_parser::error(@$, "data type incompat");
     $$ = new comp_node($2, comp_type::_dec);
   }
+| label_rev "=" "SIZE" "(" label_rev ")"
+  {
+    if (symtab[$1.val].entry_type != type::index)
+      yy::lre_parser::error(@1, "data type incompat");
+    if (symtab[$5.val].entry_type != type::region)
+      yy::lre_parser::error(@3, "data type incompat");
+    $$ = new comp_node($1, $5, comp_type::_size);
+  }
 | "PRIME" "(" label_rev ")"
   {
     if (symtab[$3.val].entry_type == type::index)
@@ -281,15 +301,13 @@ exp:
       yy::lre_parser::error(@$, "data type incompat");
     $$ = new comp_node($3, $5, $7, $9, comp_type::_sat);
   }
-| "SMP" "(" label_rev "," label_rev "," label_rev ")"
+| "PROP" "(" label_rev "," label_rev ")"
   {
-    if (symtab[$3.val].entry_type != type::region)
+    if (symtab[$3.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    if (symtab[$5.val].entry_type != type::region)
+    if (symtab[$5.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    if (symtab[$7.val].entry_type != type::cube)
-      yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($3, $5, $7, comp_type::_smp);
+    $$ = new comp_node($3, $5, comp_type::_prop);
   }
 | "RETURN" "number"
   { $$ = new comp_node($2, comp_type::_return); }

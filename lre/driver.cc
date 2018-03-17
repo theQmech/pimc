@@ -14,13 +14,15 @@ int lre_driver::parse(const std::string &f){
   parser.set_debug_level(trace_parsing);
   int res = parser.parse();
   scan_end();
-  return res;
+  return (res || err);
 }
 
 void lre_driver::error(const yy::location& l, const std::string& m){
+  err = 1;
   std::cerr<<l<<": "<<m<<std::endl;
 }
 
 void lre_driver::error(const std::string& m){
+  err = 1;
   std::cerr<<m<<std::endl;
 }

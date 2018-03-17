@@ -5,12 +5,11 @@
 [X] Copy values to Inits
 [X] Arrays Init
 [ ] Refactor DSs into files
+[X] Prop Clauses
+[ ] Generalization
 
 ------------------------------------------
 
-[ ] Prop Clauses
-[ ] Generalization
+
 [ ] How to free arrays?
-
-
 [ ] Is the better implementation of return good enough?

@@ -33,6 +33,38 @@ data_struct *fetch_data(opd &opd_){
 		logAndStop("Should not reach here");
 }
 
+// DO NOT COPY THIS CODE OR REFER TO IT TO FOR PURPOSES OF WRITING MORE CODE.
+void prop_clauses(int begin, int end){
+	region *frame = dynamic_cast<region *>(symtab[symtab.get_symbol("CNF_ARR")].data);
+	assert(0 <= begin && begin < 10);
+	assert(0 <= end && end < 10);
+
+	cube_ cex;
+
+	for(int curr=begin; curr<end; ++curr){
+		solver instSolver(man_t.AigNtk(), man_t.Network_Cnf());
+		instSolver.add(*((data_struct *)(&frame[curr])));
+		instSolver.add(*(symtab[symtab.get_symbol("T")].data));
+
+		for(int j=0; j<frame[curr].size(); ++j){
+			instSolver.assumps.clear();
+			instSolver.assumps = frame[curr][j];
+			for(int k=0; k<instSolver.assumps.size(); ++k)
+				instSolver.assumps[k] = lit_neg(instSolver.assumps[k]);
+
+			instSolver.solve(*((data_struct *)(&cex)));
+
+			if (cex){
+			}
+			else{
+				frame[begin+1].addClause(instSolver.assumps, true);
+			}
+		}
+
+	}
+
+}
+
 void ast_node::compute(){
 	logAndStop("Not implemented");
 }
@@ -60,6 +92,7 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:
+			// cout<<"currframe:\t"<<((index_ *)symtab[10].data)->getval()<<endl;
 			logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 
@@ -153,6 +186,17 @@ void comp_node::compute(){
 				(*fetch_data(opd1)) = (*fetch_data(opd2));
 			break;
 
+		case comp_type::_access:{
+			vector<lit> cl = (*(dynamic_cast<region *>(fetch_data(opd2))))[((index_ *)fetch_data(opd3))->getval()];
+			*(dynamic_cast<cube_ *>(fetch_data(opd1))) = cl;
+			(dynamic_cast<cube_ *>(fetch_data(opd1)))->complement();
+			break;
+		}
+
+		case comp_type::_size:
+			fetch_data(opd1)->set(((region *)fetch_data(opd2))->size());
+			break;
+
 		case comp_type::_conjunct:{
 			fetch_data(opd1)->conjunct(*fetch_data(opd2));
 			break;
@@ -174,6 +218,17 @@ void comp_node::compute(){
 			else
 				logAndStop("Should not reach here");
 			break;
+
+		case comp_type::_prop:{
+			if (fetch_type(opd1) != type::index)
+				logAndStop("Should not reach here");
+			if (fetch_type(opd2) != type::index)
+				logAndStop("Should not reach here");
+			int begin = ((index_ *)fetch_data(opd1))->getval();
+			int end = ((index_ *)fetch_data(opd2))->getval();
+			prop_clauses(begin, end);
+			break;
+		}
 
 		case comp_type::_sat:{
 			solver instSolver(man_t.AigNtk(), man_t.Network_Cnf());
@@ -199,4 +254,3 @@ void comp_node::compute(){
 			break;
 	}
 }
-

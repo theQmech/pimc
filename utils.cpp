@@ -158,7 +158,7 @@ void cube_::conjunct(data_struct &U){
  *  TODO: Separate data structure for single literals?
  */
 void cube_::complement(){
-    assert(nLits == 1);
+    // assert(nLits == 1);
 
     for(int i=0; i<nLits; ++i){
         vLits[i] = lit_neg(vLits[i]);
@@ -218,6 +218,10 @@ bool region::sanityCheck(vector<lit> &U){
         if (lit_var(U[i]) == lit_var(U[i+1]))
             return false;
 
+    for(int i=0; i<nClauses; ++i)
+        if (std::equal(U.begin(), U.end(), vClauses[i].begin()))
+            return false;
+
     return true;
 }
 
@@ -253,10 +257,8 @@ void region::initialize(vector<vector<lit>> init, int nVars_){
     vClauses.resize(init.size(), vector<lit>());
     for(int i=0; i<vClauses.size(); ++i){
         vClauses[i].resize(init[i].size(), -1);
-        for(int j=0; j<vClauses[i].size(); ++j){
-            vClauses[i][j] = init[i][j];
-            nLits++;
-        }
+        std::copy(init[i].begin(), init[i].end(), vClauses[i].begin());
+        nLits += init[i].size();
         nClauses++;
     }
 }
@@ -283,6 +285,8 @@ region::region(const region &init){
 void region::operator=(data_struct &init){
     region *rhs = dynamic_cast<region *>(&init);
     assert(rhs);
+
+    // TODO assign if data_struct is cube
 
     initialize(rhs->vClauses, rhs->nVars);
 }
@@ -316,13 +320,14 @@ void region::addClause(vector<lit> tmp, bool negate){
     if (tmp.size() == 0) return;
 
     sort(tmp.begin(), tmp.end());
-    assert(sanityCheck(tmp));
 
     // TODO: check if adding clause makes any difference
 
     if (negate)
         for(int i=0; i<tmp.size(); ++i)
             tmp[i] = lit_neg(tmp[i]);
+
+    if(!sanityCheck(tmp)) return;
 
     vClauses.push_back(tmp);
     nLits += tmp.size();
@@ -334,12 +339,14 @@ void region::conjunct(data_struct &U){
     cube_ *cub = dynamic_cast<cube_ *>(&U);
 
     if (reg){
-        vClauses.resize(nClauses + reg->nClauses, vector<lit>());
         for(int i=0; i<reg->nClauses; ++i)
-            vClauses[nClauses+i] = reg->vClauses[i];
+            addClause(reg->vClauses[i], false);
+        // vClauses.resize(nClauses + reg->nClauses, vector<lit>());
+        // for(int i=0; i<reg->nClauses; ++i)
+        //     vClauses[nClauses+i] = reg->vClauses[i];
 
-        nClauses += reg->nClauses;
-        nLits += reg->nLits;
+        // nClauses += reg->nClauses;
+        // nLits += reg->nLits;
     }
     else if (cub)
         addClause(cub->vLits, true);
@@ -465,7 +472,7 @@ void index_::operator++(){
 
 //! Decrement the index.
 void index_::operator--(){
-    assert(val > 0);
+    // assert(val > 0);
     --val;
 }
 
