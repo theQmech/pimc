@@ -17,8 +17,6 @@ void fillsymbols(){
 }
 
 void initsymbols(){
-	// TODO: Copy vals
-	// doesn not work
 
 	cube_ P;
 	InitProperty(P);

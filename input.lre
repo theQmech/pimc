@@ -19,7 +19,6 @@ if (cex){
 
 ++currframe
 while(currframe < maxframes){
-	# BREAK
 	SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
 	if (cex){
 
@@ -71,11 +70,12 @@ while(currframe < maxframes){
 			cex = CNF_ARR[i][k]
 			cexprime = cex
 			PRIME(cexprime)
-			SAT(CNF_ARR[i] ^ T ^ cexprime, cex)
-			if (cex){
+			SAT(CNF_ARR[i] ^ T ^ cexprime, cexprime)
+			if (cexprime){
 			}
 			else{
 				CNF_ARR[j] ^= cex
+				# BREAK
 			}
 			++k
 		}
@@ -83,7 +83,6 @@ while(currframe < maxframes){
 		++i
 		++j
 	}
-	# cex = CNF_ARR[i][i]
 
 
 	i = 0

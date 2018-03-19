@@ -208,7 +208,17 @@ bool cube_::operator==(data_struct &U){
     return true;
 }
 
-/*! TODO implement this.
+void cube_::print(){
+    cout<<"-------------------------------------------------------------"<<endl;
+    cout<<nLits<<"\t";
+    for(int i=0; i<vLits.size(); ++i){
+        cout<<vLits[i]<<" ";
+    }
+    cout<<endl;
+    cout<<"-------------------------------------------------------------"<<endl;
+}
+
+/*! TODO think more on this
  */
 bool region::sanityCheck(vector<lit> &U){
     if (U.size() == 0)
@@ -321,8 +331,6 @@ void region::addClause(vector<lit> tmp, bool negate){
 
     sort(tmp.begin(), tmp.end());
 
-    // TODO: check if adding clause makes any difference
-
     if (negate)
         for(int i=0; i<tmp.size(); ++i)
             tmp[i] = lit_neg(tmp[i]);
@@ -352,6 +360,17 @@ void region::conjunct(data_struct &U){
         addClause(cub->vLits, true);
     else
         logAndStop("Should not reach here");
+}
+
+void region::print(){
+    cout<<"-------------------------------------------------------------"<<endl;
+    cout<<nVars<<"\t"<<nClauses<<"\t"<<nLits<<endl;
+    for(int i=0; i<nClauses; ++i){
+        for(int j=0; j<vClauses[i].size(); ++j)
+            cout<<vClauses[i][j]<<" ";
+        cout<<endl;
+    }
+    cout<<"-------------------------------------------------------------"<<endl;
 }
 
 region::operator bool() const{

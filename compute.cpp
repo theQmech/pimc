@@ -91,10 +91,20 @@ void lre_node::compute(){
 				n3->compute();
 			break;
 
-		case node_type::_break_:
-			// cout<<"currframe:\t"<<((index_ *)symtab[10].data)->getval()<<endl;
+		case node_type::_break_:{
+			// cout<<endl<<endl;
+			// cout<<"BREAK\t";
+			// cout<<((index_ *)symtab[symtab.get_symbol("i")].data)->getval()<<"\t";
+			// cout<<((index_ *)symtab[symtab.get_symbol("j")].data)->getval()<<endl;
+			// ((cube_ *)symtab[symtab.get_symbol("cex")].data)->print();
+			// for (int i=0; i<5; ++i){
+			// 	cout<<"Region "<<i<<endl;
+			// 	((region *)symtab[symtab.get_symbol("CNF_ARR")].data)[i].print();
+			// }
+			// cout<<endl<<endl;
 			logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
+		}
 
 		default:
 			logAndStop("Should not reach here");

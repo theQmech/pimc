@@ -41,7 +41,6 @@ void InitProperty(cube_ &U){
 
 //! @return Region which represents the transition function in CNF form.
 region getT(){
-    // TODO
     return region(man_t.Network_Cnf());
     assert(false);
 }

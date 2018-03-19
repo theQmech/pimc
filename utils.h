@@ -64,6 +64,8 @@ public:
 
     operator bool() const;
     bool operator==(data_struct &init);
+
+    void print();
 };
 
 /*! Data structure holding a CNF formula. Internally is stored as a vector of
@@ -102,6 +104,8 @@ public:
     void addToSolver(sat_solver *pSolver) const;
     void toPrime(unordered_map<lit, lit> &toPrimeMap);
     bool operator==(data_struct &init);
+
+    void print();
 };
 
 /*! Data structure for the index.
