@@ -85,6 +85,7 @@ while(currframe < maxframes){
 	}
 
 
+	# CHECK_FRAMES_EQUAL(zero, currframe)
 	i = 0
 	j = 1
 	while (i < currframe){
@@ -96,7 +97,4 @@ while(currframe < maxframes){
 	}
 
 }
-
-
 return 0
-
