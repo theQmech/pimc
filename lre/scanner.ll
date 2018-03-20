@@ -54,6 +54,8 @@ blank [ \t]
 "if"            return yy::lre_parser::make_IF(loc);
 "else"          return yy::lre_parser::make_ELSE(loc);
 "while"         return yy::lre_parser::make_WHILE(loc);
+"for"           return yy::lre_parser::make_FOR(loc);
+"do"            return yy::lre_parser::make_DO(loc);
 "{"             return yy::lre_parser::make_CLPAREN(loc);
 "}"             return yy::lre_parser::make_CRPAREN(loc);
 "["             return yy::lre_parser::make_SLPAREN(loc);

@@ -80,8 +80,31 @@ void lre_node::compute(){
 			break;
 
 		case node_type::while_stmt:
-			for(n1->compute(); ((bool_node *)n1)->result; n2->compute(), n1->compute());
+			for(
+				n1->compute();
+				((bool_node *)n1)->result;
+				n2->compute(), n1->compute()
+			);
 			break;
+
+		case node_type::dowhile_stmt:
+			for(
+				n2->compute(), n1->compute();
+				((bool_node *)n1)->result;
+				n2->compute(), n1->compute()
+			);
+			break;
+
+		case node_type::for_stmt:{
+			fetch_data(opd1)->set(opd2.val);
+			int rval = (opd3.ty==opd_type::num)?opd3.val:((index_ *)fetch_data(opd3))->getval();
+			assert(opd2.val <= rval);
+			while(((index_ *)fetch_data(opd1))->getval() < rval){
+				n1->compute();
+				rval = (opd3.ty==opd_type::num)?opd3.val:((index_ *)fetch_data(opd3))->getval();
+			}
+			break;
+		}
 
 		case node_type::if_stmt:
 			n1->compute();
@@ -92,16 +115,6 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:{
-			// cout<<endl<<endl;
-			// cout<<"BREAK\t";
-			// cout<<((index_ *)symtab[symtab.get_symbol("i")].data)->getval()<<"\t";
-			// cout<<((index_ *)symtab[symtab.get_symbol("j")].data)->getval()<<endl;
-			// ((cube_ *)symtab[symtab.get_symbol("cex")].data)->print();
-			// for (int i=0; i<5; ++i){
-			// 	cout<<"Region "<<i<<endl;
-			// 	((region *)symtab[symtab.get_symbol("CNF_ARR")].data)[i].print();
-			// }
-			// cout<<endl<<endl;
 			logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 		}

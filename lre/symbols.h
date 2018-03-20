@@ -3,7 +3,7 @@
 
 #include <string>
 
-enum class node_type {empty, compose, while_stmt, if_stmt, _break_};
+enum class node_type {empty, compose, while_stmt, for_stmt, dowhile_stmt, if_stmt, _break_};
 enum class opd_type {num, var, arr};
 enum class bool_op {_or, _and, _not, _cast, _eq, _gt, _lt, _ge, _le};
 enum class comp_type {_size, _access, _copy, _conjunct, _inc, _dec, _prime, _prop, _sat, _smp, _return};
@@ -30,11 +30,15 @@ public:
 
 class lre_node : public ast_node{
 	ast_node *n3;
+	opd opd1;
+	opd opd2;
+	opd opd3;
 	node_type ty;
 public:
 	lre_node(node_type);
 	lre_node(ast_node *, ast_node *, node_type);
 	lre_node(ast_node *, ast_node *, ast_node *, node_type);
+	lre_node(opd, opd, opd, ast_node *,node_type);
 	void compute();
 };
 

@@ -52,6 +52,9 @@ class lre_driver;
   IF            "IF"
   ELSE          "ELSE"
   WHILE         "WHILE"
+  FROM          "FROM"
+  DO            "DO"
+  FOR           "FOR"
   CLPAREN       "{"
   CRPAREN       "}"
   SLPAREN       "["
@@ -80,7 +83,7 @@ class lre_driver;
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 %type <opd> label_rev num_opd;
-%type <ast_node *> body breakpoint while_block if_block exp bool;
+%type <ast_node *> body breakpoint while_block for_block dowhile_block if_block exp bool;
 %type <type> type_ds decl;
 
 // %printer { yyoutput << (void *)$$; } <*>;
@@ -131,6 +134,8 @@ body:
   %empty                      { $$ = new lre_node(node_type::empty);}
 | body breakpoint             { $$ = new lre_node($1, $2, node_type::compose); }
 | body while_block            { $$ = new lre_node($1, $2, node_type::compose); }
+| body for_block            { $$ = new lre_node($1, $2, node_type::compose); }
+| body dowhile_block            { $$ = new lre_node($1, $2, node_type::compose); }
 | body if_block               { $$ = new lre_node($1, $2, node_type::compose); }
 | body exp                    { $$ = new lre_node($1, $2, node_type::compose); }
 ;
@@ -141,6 +146,30 @@ breakpoint:
 
 while_block:
   "WHILE" "(" bool ")" "{" body "}"       { $$ = new lre_node($3, $6, node_type::while_stmt); }
+;
+
+dowhile_block:
+  "DO" "{" body "}" "WHILE" "(" bool ")"
+{
+  $$ = new lre_node($7, $3, node_type::dowhile_stmt);
+}
+;
+
+for_block:
+  "FOR" label_rev "FROM" num_opd "TO" label_rev "{" body "}"
+{
+  if (symtab[$2.val].entry_type != type::index)
+    yy::lre_parser::error(@$, "data type incompat");
+  if (symtab[$6.val].entry_type != type::index)
+    yy::lre_parser::error(@$, "data type incompat");
+  $$ = new lre_node($2, $4, $6, $8, node_type::for_stmt);
+}
+| "FOR" label_rev "FROM" num_opd "TO" num_opd "{" body "}"
+{
+  if (symtab[$2.val].entry_type != type::index)
+    yy::lre_parser::error(@$, "data type incompat");
+  $$ = new lre_node($2, $4, $6, $8, node_type::for_stmt);
+}
 ;
 
 if_block:
