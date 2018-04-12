@@ -17,7 +17,6 @@ void fillsymbols(){
 }
 
 void initsymbols(){
-
 	cube_ P;
 	InitProperty(P);
 	*(symtab[symtab.get_symbol("P")].data) = P;

@@ -49,6 +49,7 @@ class lre_driver;
   SIZE          "SIZE"
   CUBE          "CUBE"
   INDEX         "INDEX"
+  COLL          "COLL"
   IF            "IF"
   ELSE          "ELSE"
   WHILE         "WHILE"
@@ -59,6 +60,7 @@ class lre_driver;
   CRPAREN       "}"
   SLPAREN       "["
   SRPAREN       "]"
+  ITER          ":"
   ASSIGN        "="
   CONJUNCT      "^="
   INC           "INC"
@@ -73,9 +75,12 @@ class lre_driver;
   ge            "ge"
   eq            "eq"
   ne            "ne"
-  SAT           "SAT"
   CNFARR        "CNF_ARR"
   CLSARR        "CLS_ARR"
+  CHKSFTY       "CHKSFTY"
+  PRESTATE      "PRESTATE"
+  CDECOMP       "CDECOMP"
+  SUBSUME       "SUBSUME"
   BREAK         "BREAK"
   SEPARATOR     "%%"
 ;
@@ -116,7 +121,7 @@ mode:
 ;
 
 decl_list:
-  decl decl decl              {}
+  decl decl decl decl         {}
 ;
 
 decl:
@@ -128,6 +133,7 @@ type_ds:
   "REGION"                    { $$ = type::region; }
 | "CUBE"                      { $$ = type::cube; }
 | "INDEX"                     { $$ = type::index; }
+| "COLL"                      { $$ = type::coll; }
 ;
 
 body:
@@ -169,6 +175,12 @@ for_block:
   if (symtab[$2.val].entry_type != type::index)
     yy::lre_parser::error(@$, "data type incompat");
   $$ = new lre_node($2, $4, $6, $8, node_type::for_stmt);
+}
+| "FOR" "(" label_rev ":" label_rev ")" "{" body "}"
+{
+  if (symtab[$5.val].entry_type != type::coll)
+    yy::lre_parser::error(@5, "data type incompat");
+  $$ = new lre_node($3, $5, $8, node_type::iter_stmt);
 }
 ;
 
@@ -268,15 +280,41 @@ exp:
       yy::lre_parser::error(@$, "unequal data types");
     $$ = new comp_node($1, $3, comp_type::_copy);
   }
-| label_rev "=" label_rev "[" label_rev "]"
+| label_rev "=" "CHKSFTY" "(" label_rev ")"
   {
     if (symtab[$1.val].entry_type != type::cube)
-      yy::lre_parser::error(@1, "unequal data types");
-    if (symtab[$3.val].entry_type != type::region)
-      yy::lre_parser::error(@3, "unequal data types");
-    if (symtab[$5.val].entry_type != type::index)
-      yy::lre_parser::error(@5, "unequal data types");
-    $$ = new comp_node($1, $3, $5, comp_type::_access);
+      yy::lre_parser::error(@$, "data type incompat");
+    if (symtab[$5.val].entry_type != type::region)
+      yy::lre_parser::error(@$, "data type incompat");
+    $$ = new comp_node($1, $5, comp_type::_chksfty);
+  }
+| label_rev "=" "PRESTATE" "(" label_rev "," label_rev "," "number" ")"
+  {
+    if (symtab[$1.val].entry_type != type::cube)
+      yy::lre_parser::error(@$, "data type incompat");
+    if (symtab[$5.val].entry_type != type::region)
+      yy::lre_parser::error(@$, "data type incompat");
+    if (symtab[$7.val].entry_type != type::cube)
+      yy::lre_parser::error(@$, "data type incompat");
+    $$ = new comp_node($1, $5, $7, $9, comp_type::_prestate);
+  }
+| label_rev "=" "CDECOMP" "(" label_rev "," "number" ")"
+  {
+    if (symtab[$1.val].entry_type != type::coll)
+      yy::lre_parser::error(@1, "data type incompat");
+    if (symtab[$5.val].entry_type != type::region)
+      yy::lre_parser::error(@5, "data type incompat");
+    $$ = new comp_node($1, $5, $7, comp_type::_cdecomp);
+  }
+| label_rev "=" "SUBSUME" "(" label_rev "," label_rev ")"
+  {
+    if (symtab[$1.val].entry_type != type::cube)
+      yy::lre_parser::error(@$, "data type incompat");
+    if (symtab[$5.val].entry_type != type::region)
+      yy::lre_parser::error(@$, "data type incompat");
+    if (symtab[$7.val].entry_type != type::region)
+      yy::lre_parser::error(@$, "data type incompat");
+    $$ = new comp_node($1, $5, $7, comp_type::_subsume);
   }
 | label_rev "=" num_opd
   {
@@ -303,40 +341,6 @@ exp:
     if (symtab[$2.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
     $$ = new comp_node($2, comp_type::_dec);
-  }
-| label_rev "=" "SIZE" "(" label_rev ")"
-  {
-    if (symtab[$1.val].entry_type != type::index)
-      yy::lre_parser::error(@1, "data type incompat");
-    if (symtab[$5.val].entry_type != type::region)
-      yy::lre_parser::error(@3, "data type incompat");
-    $$ = new comp_node($1, $5, comp_type::_size);
-  }
-| "PRIME" "(" label_rev ")"
-  {
-    if (symtab[$3.val].entry_type == type::index)
-      yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($3, comp_type::_prime);
-  }
-| "SAT" "(" label_rev "AND" label_rev "AND" label_rev "," label_rev ")"
-  {
-    if (symtab[$3.val].entry_type == type::index)
-      yy::lre_parser::error(@$, "data type incompat");
-    if (symtab[$5.val].entry_type == type::index)
-      yy::lre_parser::error(@$, "data type incompat");
-    if (symtab[$7.val].entry_type == type::index)
-      yy::lre_parser::error(@$, "data type incompat");
-    if (symtab[$9.val].entry_type != type::cube)
-      yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($3, $5, $7, $9, comp_type::_sat);
-  }
-| "PROP" "(" label_rev "," label_rev ")"
-  {
-    if (symtab[$3.val].entry_type != type::index)
-      yy::lre_parser::error(@$, "data type incompat");
-    if (symtab[$5.val].entry_type != type::index)
-      yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($3, $5, comp_type::_prop);
   }
 | "RETURN" "number"
   { $$ = new comp_node($2, comp_type::_return); }

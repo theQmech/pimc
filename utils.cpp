@@ -384,9 +384,7 @@ region::operator bool() const{
  *  @return         A copy of ith literal returned as a vector<lit>.
  */
 vector<lit> region::operator[](int i) const{
-    assert(0<=i && i<vClauses.size());
-
-    return vClauses[i];
+    return vClauses.at(i);
 }
 
 /*! Returns number of clauses in the CNF.
@@ -400,8 +398,8 @@ int region::size() const{
  *  @param[in]      B   Number of clauses in the CNF.
  *  @return             true if B is implied, false otherwise
  */
-bool region::implies(const region &B) const{
-    bool ret_val = true;
+int region::implies(const region &B) const{
+    int ret_val = -1;
 
     sat_solver *pSolver = sat_solver_new();
     assert(pSolver);
@@ -426,7 +424,7 @@ bool region::implies(const region &B) const{
             continue;
         }
         else{
-            ret_val = false;
+            ret_val = i;
             break;
         }
     }
@@ -537,6 +535,29 @@ bool index_::operator<=(data_struct &v){
 //! Cast to bool. Interpreted as true for nonzero values only.
 index_::operator bool() const{
     return !(val == 0);
+}
+
+coll_::coll_(){
+    sz = 0;
+    vMem.clear();
+}
+
+void coll_::operator=(const region &init){
+    sz = init.size();
+    vMem.resize(sz);
+
+    for(int i=0; i<sz; ++i){
+        vMem[i] = new cube_();
+        (*dynamic_cast<cube_ *>(vMem[i])) = init[i];
+    }
+}
+
+data_struct * coll_::operator[](int i){
+    return vMem.at(i);
+}
+
+int coll_::size(){
+    return sz;
 }
 
 //! Constructor.

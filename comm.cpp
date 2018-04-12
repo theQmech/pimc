@@ -78,6 +78,13 @@ data_struct *make_ds(type ty_, bool isArray, int sz){
 				ret = new index_();
 			break;
 
+		case type::coll:
+			if (isArray)
+				logAndStop("Not implemented");
+			else
+				ret = new coll_();
+			break;
+
 		default:
 			logAndStop("Should not reach here");
 			break;

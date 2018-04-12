@@ -25,7 +25,7 @@ blank [ \t]
 
 %{
   // Code run each time a pattern is matched.
-  # define YY_USER_ACTION  loc.columns (yyleng);
+  # define YY_USER_ACTION  loc.columns(yyleng);
 %}
 
 %%
@@ -35,9 +35,9 @@ blank [ \t]
   loc.step ();
 %}
 
-{blank}+        loc.step ();
-{comm}        loc.step ();
-[\n]+           loc.lines (yyleng); loc.step ();
+{blank}+        loc.step();
+{comm}          loc.step();
+[\n]+           loc.lines(yyleng); loc.step();
 "use_bdd"       return yy::lre_parser::make_USEBDD(loc);
 "use_clauses"   return yy::lre_parser::make_USECLAUSES(loc);
 "$$"            return yy::lre_parser::make_SEPARATOR(loc);
@@ -48,6 +48,7 @@ blank [ \t]
 "region"        return yy::lre_parser::make_REGION(loc);
 "cube"          return yy::lre_parser::make_CUBE(loc);
 "index"         return yy::lre_parser::make_INDEX(loc);
+"collection"    return yy::lre_parser::make_COLL(loc);
 "("             return yy::lre_parser::make_LPAREN(loc);
 ")"             return yy::lre_parser::make_RPAREN(loc);
 ","             return yy::lre_parser::make_COMMA(loc);
@@ -60,6 +61,7 @@ blank [ \t]
 "}"             return yy::lre_parser::make_CRPAREN(loc);
 "["             return yy::lre_parser::make_SLPAREN(loc);
 "]"             return yy::lre_parser::make_SRPAREN(loc);
+":"             return yy::lre_parser::make_ITER(loc);
 "="             return yy::lre_parser::make_ASSIGN(loc);
 "^="            return yy::lre_parser::make_CONJUNCT(loc);
 "++"            return yy::lre_parser::make_INC(loc);
@@ -74,7 +76,10 @@ blank [ \t]
 ">="            return yy::lre_parser::make_ge(loc);
 "=="            return yy::lre_parser::make_eq(loc);
 "!="            return yy::lre_parser::make_ne(loc);
-"SAT"           return yy::lre_parser::make_SAT(loc);
+"check_safety"  return yy::lre_parser::make_CHKSFTY(loc);
+"pre_state"     return yy::lre_parser::make_PRESTATE(loc);
+"conj_decomp"   return yy::lre_parser::make_CDECOMP(loc);
+"subsume"       return yy::lre_parser::make_SUBSUME(loc);
 "CNF_ARR"       return yy::lre_parser::make_CNFARR(loc);
 "CLS_ARR"       return yy::lre_parser::make_CLSARR(loc);
 "BREAK"         return yy::lre_parser::make_BREAK(loc);

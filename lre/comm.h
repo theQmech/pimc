@@ -1,7 +1,7 @@
 #ifndef _COMM_
 #define _COMM_
 
-enum class type {bdd, region, cube, index};
+enum class type {bdd, region, cube, index, coll};
 
 class data_struct{
 public:

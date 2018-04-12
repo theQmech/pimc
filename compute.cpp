@@ -106,6 +106,16 @@ void lre_node::compute(){
 			break;
 		}
 
+		case node_type::iter_stmt:{
+			coll_ *setInst = dynamic_cast<coll_ *>(fetch_data(opd2));
+			for(int i=0; i<setInst->size(); ++i){
+				*dynamic_cast<cube_ *>(fetch_data(opd1)) = *((*setInst)[i]);
+				n1->compute();
+			}
+			break;
+			logAndStop("Should not reach here");
+		}
+
 		case node_type::if_stmt:
 			n1->compute();
 			if (((bool_node *)n1)->result)
@@ -216,10 +226,6 @@ void comp_node::compute(){
 			break;
 		}
 
-		case comp_type::_size:
-			fetch_data(opd1)->set(((region *)fetch_data(opd2))->size());
-			break;
-
 		case comp_type::_conjunct:{
 			fetch_data(opd1)->conjunct(*fetch_data(opd2));
 			break;
@@ -233,34 +239,52 @@ void comp_node::compute(){
 			--(*fetch_data(opd1));
 			break;
 
-		case comp_type::_prime:
-			if (fetch_type(opd1) == type::region)
-				((region *)fetch_data(opd1))->toPrime(man_t.toPrime);
-			else if (fetch_type(opd1) == type::cube)
-				((cube_ *)fetch_data(opd1))->toPrime(man_t.toPrime);
-			else
-				logAndStop("Should not reach here");
-			break;
+		case comp_type::_chksfty:{
+			solver instSolver(man_t.AigNtk(), man_t.Network_Cnf());
 
-		case comp_type::_prop:{
-			if (fetch_type(opd1) != type::index)
-				logAndStop("Should not reach here");
-			if (fetch_type(opd2) != type::index)
-				logAndStop("Should not reach here");
-			int begin = ((index_ *)fetch_data(opd1))->getval();
-			int end = ((index_ *)fetch_data(opd2))->getval();
-			prop_clauses(begin, end);
+			// Add state
+			instSolver.add(*fetch_data(opd2));
+
+			// Add notP
+			cube_ notP;
+			InitProperty(notP);
+			notP.complement();
+			instSolver.add(notP);
+
+			instSolver.solve(*fetch_data(opd1));
 			break;
 		}
 
-		case comp_type::_sat:{
+		case comp_type::_prestate:{
 			solver instSolver(man_t.AigNtk(), man_t.Network_Cnf());
 
-			instSolver.add(*fetch_data(opd1));
+			// Add state
 			instSolver.add(*fetch_data(opd2));
-			instSolver.add(*fetch_data(opd3));
 
-			instSolver.solve(*fetch_data(opd4));
+			// Add cexprime
+			cube_ cex = *dynamic_cast<cube_ *>(fetch_data(opd3));
+			toPrime(cex);
+			instSolver.add(cex);
+
+			// Add transition 0
+			region T;
+			initTransition(T);
+			instSolver.add(T);
+
+			instSolver.solve(*fetch_data(opd1));
+			break;
+		}
+
+		case comp_type::_cdecomp:{
+
+		}
+
+		case comp_type::_subsume:{
+			int res = dynamic_cast<region *>(fetch_data(opd2))->implies(*dynamic_cast<region *>(fetch_data(opd3)));
+			if (res == -1)
+				dynamic_cast<cube_ *>(fetch_data(opd1))->clear();
+			else
+				(*dynamic_cast<cube_ *>(fetch_data(opd1))) = (*dynamic_cast<region *>(fetch_data(opd2)))[res];
 			break;
 		}
 

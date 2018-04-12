@@ -100,7 +100,7 @@ public:
     vector<lit> operator[](int i) const;
     int size() const;
 
-    bool implies(const region &B) const;
+    int implies(const region &B) const;
     void addToSolver(sat_solver *pSolver) const;
     void toPrime(unordered_map<lit, lit> &toPrimeMap);
     bool operator==(data_struct &init);
@@ -127,6 +127,16 @@ public:
     bool operator<=(data_struct &v);
 
     operator bool() const;
+};
+
+class coll_ : public data_struct{
+    int sz;
+    vector<data_struct *> vMem;
+public:
+    coll_();
+    void operator=(const region &);
+    data_struct *operator[](int i);
+    int size();
 };
 
 //! Wrapper to SAT solver provided by ABC. ABC does not allow us to add single

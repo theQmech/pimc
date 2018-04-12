@@ -3,10 +3,10 @@
 
 #include <string>
 
-enum class node_type {empty, compose, while_stmt, for_stmt, dowhile_stmt, if_stmt, _break_};
+enum class node_type {empty, compose, while_stmt, for_stmt, iter_stmt, dowhile_stmt, if_stmt, _break_};
 enum class opd_type {num, var, arr};
 enum class bool_op {_or, _and, _not, _cast, _eq, _gt, _lt, _ge, _le};
-enum class comp_type {_size, _access, _copy, _conjunct, _inc, _dec, _prime, _prop, _sat, _smp, _return};
+enum class comp_type {_chksfty, _prestate, _cdecomp, _subsume, _access, _copy, _conjunct, _inc, _dec, _smp, _return};
 
 class opd{
 public:
@@ -38,6 +38,7 @@ public:
 	lre_node(node_type);
 	lre_node(ast_node *, ast_node *, node_type);
 	lre_node(ast_node *, ast_node *, ast_node *, node_type);
+	lre_node(opd, opd, ast_node *,node_type);
 	lre_node(opd, opd, opd, ast_node *,node_type);
 	void compute();
 };
@@ -70,6 +71,8 @@ public:
 	comp_node(opd, opd, opd, comp_type);
 	comp_node(opd, opd, opd, opd, comp_type);
 	comp_node(opd, int, comp_type);
+	comp_node(opd, opd, int, comp_type);
+	comp_node(opd, opd, opd, int, comp_type);
 	void compute();
 };
 #endif

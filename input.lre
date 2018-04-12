@@ -2,6 +2,7 @@ use_clauses
 region
 cube cex cexprime cexprev
 index zero maxframes currframe stkptr i j k l
+collection cls_set
 $$
 
 zero = 0
@@ -10,7 +11,7 @@ stkptr = 0
 maxframes = 100
 CNF_ARR[currframe] = I
 
-SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
+cex = check_safety(CNF_ARR[currframe])
 if (cex){
 	++stkptr
 	CLS_ARR[stkptr] = cex
@@ -19,7 +20,7 @@ if (cex){
 
 ++currframe
 while(currframe < maxframes){
-	SAT(CNF_ARR[currframe] ^ notP ^ T, cex)
+	cex = check_safety(CNF_ARR[currframe])
 	if (cex){
 
 		++stkptr
@@ -38,10 +39,7 @@ while(currframe < maxframes){
 					++i
 				}
 
-				cexprime = cex
-				PRIME(cexprime)
-				SAT(CNF_ARR[currframe] ^ T ^ cexprime, cexprev)
-
+				cexprev = pre_state(CNF_ARR[currframe], cex, 0)
 				if (cexprev){
 					++stkptr
 					CLS_ARR[stkptr] = cexprev
@@ -64,22 +62,16 @@ while(currframe < maxframes){
 	i = 0
 	j = 1
 	while(i < currframe){
-		l = SIZE(CNF_ARR[i])
-		k = 0
-		while(k < l){
-			cex = CNF_ARR[i][k]
-			cexprime = cex
-			PRIME(cexprime)
-			SAT(CNF_ARR[i] ^ T ^ cexprime, cexprime)
-			if (cexprime){
+		cls_set = conj_decomp(CNF_ARR[i], 0)
+		for(cex : cls_set){
+			cexprev = pre_state(CNF_ARR[i], cex, 0)
+			if (cexprev){
+
 			}
 			else{
 				CNF_ARR[j] ^= cex
-				# BREAK
 			}
-			++k
 		}
-
 		++i
 		++j
 	}
@@ -89,7 +81,10 @@ while(currframe < maxframes){
 	i = 0
 	j = 1
 	while (i < currframe){
-		if(CNF_ARR[i] == CNF_ARR[j]){
+		cex = subsume(CNF_ARR[j], CNF_ARR[i])
+		if(cex){
+		}
+		else{
 			return 1
 		}
 		++i
