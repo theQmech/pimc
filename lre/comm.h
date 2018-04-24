@@ -6,13 +6,13 @@ enum class type {bdd, region, cube, index, coll};
 class data_struct{
 public:
 	virtual ~data_struct();
-	virtual void operator=(data_struct &init);
-	virtual bool operator==(data_struct &init);
-	virtual bool operator>(data_struct &init);
-	virtual bool operator>=(data_struct &init);
-	virtual bool operator<(data_struct &init);
-	virtual bool operator<=(data_struct &init);
-	virtual void conjunct(data_struct &rhs);
+	virtual void operator=(data_struct &);
+	virtual bool operator==(data_struct &);
+	virtual bool operator>(data_struct &);
+	virtual bool operator>=(data_struct &);
+	virtual bool operator<(data_struct &);
+	virtual bool operator<=(data_struct &);
+	virtual void conjunct(data_struct &);
 	virtual operator bool() const;
 	virtual void operator++();
 	virtual void operator--();

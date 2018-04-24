@@ -125,7 +125,8 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:{
-			logAndStop("Breakpoint reached, run gdb to halt here");
+			cout<<"At break point "<<loc<<endl;
+			// logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 		}
 
@@ -250,6 +251,11 @@ void comp_node::compute(){
 			InitProperty(notP);
 			notP.complement();
 			instSolver.add(notP);
+
+			// Add transition 0
+			region T;
+			initTransition(T);
+			instSolver.add(T);
 
 			instSolver.solve(*fetch_data(opd1));
 			break;

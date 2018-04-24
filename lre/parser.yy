@@ -137,27 +137,27 @@ type_ds:
 ;
 
 body:
-  %empty                      { $$ = new lre_node(node_type::empty);}
-| body breakpoint             { $$ = new lre_node($1, $2, node_type::compose); }
-| body while_block            { $$ = new lre_node($1, $2, node_type::compose); }
-| body for_block            { $$ = new lre_node($1, $2, node_type::compose); }
-| body dowhile_block            { $$ = new lre_node($1, $2, node_type::compose); }
-| body if_block               { $$ = new lre_node($1, $2, node_type::compose); }
-| body exp                    { $$ = new lre_node($1, $2, node_type::compose); }
+  %empty                      { $$ = new lre_node(@$, node_type::empty);}
+| body breakpoint             { $$ = new lre_node(@$, $1, $2, node_type::compose); }
+| body while_block            { $$ = new lre_node(@$, $1, $2, node_type::compose); }
+| body for_block            { $$ = new lre_node(@$, $1, $2, node_type::compose); }
+| body dowhile_block            { $$ = new lre_node(@$, $1, $2, node_type::compose); }
+| body if_block               { $$ = new lre_node(@$, $1, $2, node_type::compose); }
+| body exp                    { $$ = new lre_node(@$, $1, $2, node_type::compose); }
 ;
 
 breakpoint:
-  "BREAK"                     { $$ = new lre_node(NULL, NULL, node_type::_break_); }
+  "BREAK"                     { $$ = new lre_node(@$, NULL, NULL, node_type::_break_); }
 ;
 
 while_block:
-  "WHILE" "(" bool ")" "{" body "}"       { $$ = new lre_node($3, $6, node_type::while_stmt); }
+  "WHILE" "(" bool ")" "{" body "}"       { $$ = new lre_node(@$, $3, $6, node_type::while_stmt); }
 ;
 
 dowhile_block:
   "DO" "{" body "}" "WHILE" "(" bool ")"
 {
-  $$ = new lre_node($7, $3, node_type::dowhile_stmt);
+  $$ = new lre_node(@$, $7, $3, node_type::dowhile_stmt);
 }
 ;
 
@@ -168,42 +168,42 @@ for_block:
     yy::lre_parser::error(@$, "data type incompat");
   if (symtab[$6.val].entry_type != type::index)
     yy::lre_parser::error(@$, "data type incompat");
-  $$ = new lre_node($2, $4, $6, $8, node_type::for_stmt);
+  $$ = new lre_node(@$, $2, $4, $6, $8, node_type::for_stmt);
 }
 | "FOR" label_rev "FROM" num_opd "TO" num_opd "{" body "}"
 {
   if (symtab[$2.val].entry_type != type::index)
     yy::lre_parser::error(@$, "data type incompat");
-  $$ = new lre_node($2, $4, $6, $8, node_type::for_stmt);
+  $$ = new lre_node(@$, $2, $4, $6, $8, node_type::for_stmt);
 }
 | "FOR" "(" label_rev ":" label_rev ")" "{" body "}"
 {
   if (symtab[$5.val].entry_type != type::coll)
     yy::lre_parser::error(@5, "data type incompat");
-  $$ = new lre_node($3, $5, $8, node_type::iter_stmt);
+  $$ = new lre_node(@$, $3, $5, $8, node_type::iter_stmt);
 }
 ;
 
 if_block:
   "IF" "(" bool ")" "{" body "}" %prec "THEN"
-  { $$ = new lre_node($3, $6, NULL, node_type::if_stmt); }
+  { $$ = new lre_node(@$, $3, $6, NULL, node_type::if_stmt); }
 | "IF" "(" bool ")" "{" body "}" "ELSE" "{" body "}"
-  { $$ = new lre_node($3, $6, $10, node_type::if_stmt); }
+  { $$ = new lre_node(@$, $3, $6, $10, node_type::if_stmt); }
 ;
 
 %left "OR";
 %left "AND";
 %right "NOT";
 bool:
-  bool "OR" bool                { $$ = new bool_node($1, $3, bool_op::_or); }
-| bool "AND" bool               { $$ = new bool_node($1, $3, bool_op::_and); }
-| "NOT" bool                    { $$ = new bool_node($2, bool_op::_not); }
-| label_rev                     { $$ = new bool_node($1, bool_op::_cast); }
+  bool "OR" bool                { $$ = new bool_node(@$, $1, $3, bool_op::_or); }
+| bool "AND" bool               { $$ = new bool_node(@$, $1, $3, bool_op::_and); }
+| "NOT" bool                    { $$ = new bool_node(@$, $2, bool_op::_not); }
+| label_rev                     { $$ = new bool_node(@$, $1, bool_op::_cast); }
 | label_rev eq label_rev
   {
     if (symtab[$1.val].entry_type != symtab[$3.val].entry_type)
       yy::lre_parser::error(@$, "unequal data types");
-    $$ = new bool_node($1, $3, bool_op::_eq);
+    $$ = new bool_node(@$, $1, $3, bool_op::_eq);
   }
 | label_rev gt label_rev
   {
@@ -211,7 +211,7 @@ bool:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$3.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_gt);
+    $$ = new bool_node(@$, $1, $3, bool_op::_gt);
   }
 | label_rev ge label_rev
   {
@@ -219,7 +219,7 @@ bool:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$3.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_ge);
+    $$ = new bool_node(@$, $1, $3, bool_op::_ge);
   }
 | label_rev lt label_rev
   {
@@ -227,7 +227,7 @@ bool:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$3.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_lt);
+    $$ = new bool_node(@$, $1, $3, bool_op::_lt);
   }
 | label_rev le label_rev
   {
@@ -235,37 +235,37 @@ bool:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$3.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_le);
+    $$ = new bool_node(@$, $1, $3, bool_op::_le);
   }
 | label_rev eq num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_eq);
+    $$ = new bool_node(@$, $1, $3, bool_op::_eq);
   }
 | label_rev gt num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_gt);
+    $$ = new bool_node(@$, $1, $3, bool_op::_gt);
   }
 | label_rev ge num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_ge);
+    $$ = new bool_node(@$, $1, $3, bool_op::_ge);
   }
 | label_rev lt num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_lt);
+    $$ = new bool_node(@$, $1, $3, bool_op::_lt);
   }
 | label_rev le num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new bool_node($1, $3, bool_op::_le);
+    $$ = new bool_node(@$, $1, $3, bool_op::_le);
   }
 ;
 
@@ -278,7 +278,7 @@ exp:
   {
     if (symtab[$1.val].entry_type != symtab[$3.val].entry_type)
       yy::lre_parser::error(@$, "unequal data types");
-    $$ = new comp_node($1, $3, comp_type::_copy);
+    $$ = new comp_node(@$, $1, $3, comp_type::_copy);
   }
 | label_rev "=" "CHKSFTY" "(" label_rev ")"
   {
@@ -286,7 +286,7 @@ exp:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$5.val].entry_type != type::region)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($1, $5, comp_type::_chksfty);
+    $$ = new comp_node(@$, $1, $5, comp_type::_chksfty);
   }
 | label_rev "=" "PRESTATE" "(" label_rev "," label_rev "," "number" ")"
   {
@@ -296,7 +296,7 @@ exp:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$7.val].entry_type != type::cube)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($1, $5, $7, $9, comp_type::_prestate);
+    $$ = new comp_node(@$, $1, $5, $7, $9, comp_type::_prestate);
   }
 | label_rev "=" "CDECOMP" "(" label_rev "," "number" ")"
   {
@@ -304,7 +304,7 @@ exp:
       yy::lre_parser::error(@1, "data type incompat");
     if (symtab[$5.val].entry_type != type::region)
       yy::lre_parser::error(@5, "data type incompat");
-    $$ = new comp_node($1, $5, $7, comp_type::_cdecomp);
+    $$ = new comp_node(@$, $1, $5, $7, comp_type::_cdecomp);
   }
 | label_rev "=" "SUBSUME" "(" label_rev "," label_rev ")"
   {
@@ -314,13 +314,13 @@ exp:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$7.val].entry_type != type::region)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($1, $5, $7, comp_type::_subsume);
+    $$ = new comp_node(@$, $1, $5, $7, comp_type::_subsume);
   }
 | label_rev "=" num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
       yy::lre_parser::error(@$, "unequal data types");
-    $$ = new comp_node($1, $3, comp_type::_copy);
+    $$ = new comp_node(@$, $1, $3, comp_type::_copy);
   }
 | label_rev "^=" label_rev
   {
@@ -328,22 +328,22 @@ exp:
       yy::lre_parser::error(@$, "data type incompat");
     if (symtab[$3.val].entry_type == type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($1, $3, comp_type::_conjunct);
+    $$ = new comp_node(@$, $1, $3, comp_type::_conjunct);
   }
 | "INC" label_rev
   {
     if (symtab[$2.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($2, comp_type::_inc);
+    $$ = new comp_node(@$, $2, comp_type::_inc);
   }
 | "DEC" label_rev
   {
     if (symtab[$2.val].entry_type != type::index)
       yy::lre_parser::error(@$, "data type incompat");
-    $$ = new comp_node($2, comp_type::_dec);
+    $$ = new comp_node(@$, $2, comp_type::_dec);
   }
 | "RETURN" "number"
-  { $$ = new comp_node($2, comp_type::_return); }
+  { $$ = new comp_node(@$, $2, comp_type::_return); }
 ;
 
 label_rev:
@@ -361,7 +361,7 @@ label_rev:
 %%
 
 void
-yy::lre_parser::error (const location_type& l,
+yy::lre_parser::error (const location& l,
                           const std::string& m)
 {
   driver.error (l, m);

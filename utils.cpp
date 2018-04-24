@@ -102,6 +102,7 @@ bool cube_::sanityCheck(const vector<lit> &U){
  */
 cube_::cube_(){
     nLits = 0;
+    vLits.clear();
 }
 
 /*! Constructor. Initialize with vector of literals as cube_

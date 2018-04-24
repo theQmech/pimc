@@ -17,6 +17,7 @@ if (cex){
 	CLS_ARR[stkptr] = cex
 	return 0
 }
+BREAK
 
 ++currframe
 while(currframe < maxframes){

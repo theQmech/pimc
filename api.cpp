@@ -36,7 +36,8 @@ cube_ getProperty(){
 
 void InitProperty(cube_ &U){
     U.nLits = 1;
-    U.vLits = vector<lit>(1, toLitCond(man_t.getP(), 1));
+    U.vLits.clear();
+    U.vLits.push_back(toLitCond(man_t.getP(), 1));
 }
 
 //! @return Region which represents the transition function in CNF form.
