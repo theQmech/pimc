@@ -49,21 +49,22 @@ public:
     int nLits;
     /// Vector holding the literals
     vector<lit> vLits;
-    bool sanityCheck(const vector<lit> &U);
+    bool sanityCheck(const vector<lit> &);
 
     cube_();
-    cube_(const vector<lit> &U);
-    cube_(cube_ &init);
-    void operator=(data_struct &init);
-    void operator=(const vector<lit> &init);
+    cube_(const vector<lit> &);
+    cube_(cube_ &);
+    void operator=(data_struct &);
+    void operator=(cube_ &);
+    void operator=(const vector<lit> &);
 
     void clear();
-    void conjunct(data_struct &U);
+    void conjunct(data_struct &);
     void complement();
-    void toPrime(unordered_map<lit, lit> &toPrimeMap);
+    void toPrime(unordered_map<lit, lit> &);
 
     operator bool() const;
-    bool operator==(data_struct &init);
+    bool operator==(data_struct &);
 
     void print();
 };

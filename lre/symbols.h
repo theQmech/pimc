@@ -5,7 +5,7 @@
 #include <string>
 
 enum class node_type {empty, compose, while_stmt, for_stmt, iter_stmt, dowhile_stmt, if_stmt, _break_};
-enum class opd_type {num, var, arr};
+enum class opd_type {null, num, var, arr};
 enum class bool_op {_or, _and, _not, _cast, _eq, _gt, _lt, _ge, _le};
 enum class comp_type {_chksfty, _prestate, _cdecomp, _subsume, _access, _copy, _conjunct, _inc, _dec, _smp, _return};
 
@@ -19,6 +19,8 @@ public:
 	opd();
 	opd(int, opd_type);
 	opd(int, int, opd_type);
+
+	void print(int);
 };
 
 class ast_node{
@@ -28,6 +30,8 @@ public:
 	yy::location loc;
 	ast_node(yy::location &, ast_node *, ast_node *);
 	virtual void compute();
+
+	virtual void print(int);
 };
 
 class lre_node : public ast_node{
@@ -43,6 +47,8 @@ public:
 	lre_node(yy::location &, opd, opd, ast_node *,node_type);
 	lre_node(yy::location &, opd, opd, opd, ast_node *,node_type);
 	void compute();
+
+	void print(int);
 };
 
 class bool_node : public ast_node{
@@ -57,6 +63,8 @@ public:
 	bool_node(yy::location &, opd , opd , bool_op);
 	bool_node(yy::location &, opd, int, bool_op);
 	void compute();
+
+	void print(int);
 };
 
 class comp_node : public ast_node{
@@ -76,5 +84,7 @@ public:
 	comp_node(yy::location &, opd, opd, int, comp_type);
 	comp_node(yy::location &, opd, opd, opd, int, comp_type);
 	void compute();
+
+	void print(int);
 };
 #endif

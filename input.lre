@@ -21,6 +21,8 @@ BREAK
 
 ++currframe
 while(currframe < maxframes){
+	BREAK
+
 	cex = check_safety(CNF_ARR[currframe])
 	if (cex){
 

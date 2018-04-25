@@ -23,6 +23,7 @@ public:
   int err = 0;
   ast_node *root;
   DS DS_used;
+  bool verbose;
 
   // Handling the scanner.
   void scan_begin ();

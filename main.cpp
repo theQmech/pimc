@@ -30,6 +30,7 @@ void initsymbols(){
 }
 
 int main(int argc, char *argv[]){
+	bool VERBOSE = false;
 	if (argc != 3){
 		cout<<"Usage: "<<argv[0]<<" <lre_file> <aig_file>"<<endl;
 		return 1;
@@ -54,13 +55,18 @@ int main(int argc, char *argv[]){
 
 	fillsymbols();
 	initsymbols();
+	cout<<"Filled Symbol Table"<<endl;
 
+	driver.verbose = VERBOSE;
 	if (driver.parse(argv[1]) == 0)
 		std::cout<<"Parsing complete"<<std::endl;
 	else{
 		std::cerr<<"Parsing fail"<<std::endl;
 		return 1;
 	}
+
+	if (VERBOSE)
+		driver.root->print(0);
 
 	std::cout<<"---------------------------------------------"<<endl<<endl<<endl;
 

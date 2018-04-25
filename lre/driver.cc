@@ -1,7 +1,7 @@
 #include "driver.hh"
 #include "parser.hh"
 
-lre_driver::lre_driver():trace_scanning(false),trace_parsing(false){
+lre_driver::lre_driver():trace_scanning(false),trace_parsing(false),verbose(true){
 }
 
 lre_driver::~lre_driver(){

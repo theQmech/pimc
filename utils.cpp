@@ -123,6 +123,10 @@ cube_::cube_(cube_ &init){
 /*! Assignment operator.
  *  @param[in]  init   cube_ to be initalized from.
  */
+void cube_::operator=(cube_ &init){
+    *this = init.vLits;
+}
+
 void cube_::operator=(data_struct &init){
     cube_ *rhs = dynamic_cast<cube_ *>(&init);
     assert(rhs);

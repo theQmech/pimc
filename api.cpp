@@ -102,15 +102,12 @@ void InfoMan::load_network(Abc_Frame_t *pAbc){
     int i=0, j=0;
     Abc_Obj_t *pLatch;
     cout<<"Num regs:\t"<<pAig->nRegs<<endl;
-    cout<<"Init state:\t";
     Abc_NtkForEachLatch(pNtk, pLatch, i){
         cInit[j][0] = toLitCond(
                         pCnf->pVarNums[Aig_ObjId(Saig_ManLo(pAig, j))],
                         !Abc_LatchIsInit1(pLatch));
-        cout<<cInit[j][0]<<" ";
         ++j;
     }
-    cout<<endl;
 
     // Init the map toPrime
     Aig_Obj_t *pIn, *pOut;
