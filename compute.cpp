@@ -4,6 +4,7 @@
 #include "api.h"
 
 extern bool VERBOSE;
+extern bool DEBUG;
 
 type fetch_type(opd &opd_){
 	if (opd_.ty == opd_type::num)

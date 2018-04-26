@@ -5,7 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include "symbols.h"
-#include "comm.h"
+#include "../comm.h"
 
 const int ARR_SZ = 100;
 

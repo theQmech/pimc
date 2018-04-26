@@ -7,7 +7,7 @@ find_package(BISON)
 find_package(FLEX)
 bison_target(myparser parser.yy ${CMAKE_CURRENT_BINARY_DIR}/parser.cc)
 flex_target(myscanner scanner.ll ${CMAKE_CURRENT_BINARY_DIR}/scanner.cc)
-# needed because scanner uses token declarations from parser
+# needed since scanner uses token declarations from parser
 add_flex_bison_dependency(myscanner myparser)
 
 add_library(lre

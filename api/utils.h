@@ -10,7 +10,7 @@ extern "C"{
 Aig_Man_t * Abc_NtkToDar(Abc_Ntk_t * pNtk, int fExors, int fRegisters);
 }
 
-#include "lre/comm.h"
+#include "../comm.h"
 #include <iostream>
 #include <vector>
 #include <stack>

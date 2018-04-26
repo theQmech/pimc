@@ -1,4 +1,4 @@
-#include "lre/comm.h"
+#include "comm.h"
 #include "utils.h"
 
 data_struct::~data_struct(){
