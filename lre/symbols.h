@@ -4,6 +4,8 @@
 #include "location.hh"
 #include <string>
 
+typedef yy::location location;
+
 enum class node_type {empty, compose, while_stmt, for_stmt, iter_stmt, dowhile_stmt, if_stmt, _break_};
 enum class opd_type {null, num, var, arr};
 enum class bool_op {_or, _and, _not, _cast, _eq, _gt, _lt, _ge, _le};

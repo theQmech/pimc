@@ -3,6 +3,8 @@
 #include "utils.h"
 #include "api.h"
 
+extern bool VERBOSE;
+
 type fetch_type(opd &opd_){
 	if (opd_.ty == opd_type::num)
 		assert(false);
@@ -31,38 +33,6 @@ data_struct *fetch_data(opd &opd_){
 	}
 	else
 		logAndStop("Should not reach here");
-}
-
-// DO NOT COPY THIS CODE OR REFER TO IT TO FOR PURPOSES OF WRITING MORE CODE.
-void prop_clauses(int begin, int end){
-	region *frame = dynamic_cast<region *>(symtab[symtab.get_symbol("CNF_ARR")].data);
-	assert(0 <= begin && begin < 10);
-	assert(0 <= end && end < 10);
-
-	cube_ cex;
-
-	for(int curr=begin; curr<end; ++curr){
-		solver instSolver(man_t.AigNtk(), man_t.Network_Cnf());
-		instSolver.add(*((data_struct *)(&frame[curr])));
-		instSolver.add(*(symtab[symtab.get_symbol("T")].data));
-
-		for(int j=0; j<frame[curr].size(); ++j){
-			instSolver.assumps.clear();
-			instSolver.assumps = frame[curr][j];
-			for(int k=0; k<instSolver.assumps.size(); ++k)
-				instSolver.assumps[k] = lit_neg(instSolver.assumps[k]);
-
-			instSolver.solve(*((data_struct *)(&cex)));
-
-			if (cex){
-			}
-			else{
-				frame[begin+1].addClause(instSolver.assumps, true);
-			}
-		}
-
-	}
-
 }
 
 void ast_node::compute(){
@@ -113,7 +83,6 @@ void lre_node::compute(){
 				n1->compute();
 			}
 			break;
-			logAndStop("Should not reach here");
 		}
 
 		case node_type::if_stmt:
@@ -125,8 +94,10 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:{
-			cout<<"At break point "<<loc<<endl;
-			// logAndStop("Breakpoint reached, run gdb to halt here");
+			if (VERBOSE)
+				cout<<"At break point "<<loc<<endl;
+			if (DEBUG)
+				logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 		}
 
@@ -171,10 +142,10 @@ void bool_node::compute(){
 			break;
 
 		case bool_op::_eq:
-			if (fetch_type(opd1) == type::index && opd2.ty == opd_type::num)
-				result = (((index_ *)fetch_data(opd1))->getval() == opd2.val);
-			else
+			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
+			else
+				result = (dynamic_cast<index_ *>(fetch_data(opd1))->getval() == opd2.val);
 			break;
 
 		case bool_op::_gt:
@@ -282,6 +253,8 @@ void comp_node::compute(){
 		}
 
 		case comp_type::_cdecomp:{
+			*dynamic_cast<coll_ *>(fetch_data(opd1)) =
+								*dynamic_cast<region *>(fetch_data(opd2));
 			break;
 		}
 

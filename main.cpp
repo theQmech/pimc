@@ -5,6 +5,8 @@ InfoMan man_t;
 symtab_ symtab;
 lre_driver driver;
 _result global_ret_value = _result::UNDEF;
+bool VERBOSE = false;
+bool DEBUG = false;
 
 void fillsymbols(){
 	symtab.addsymbol(type::cube, "P");
@@ -30,7 +32,6 @@ void initsymbols(){
 }
 
 int main(int argc, char *argv[]){
-	bool VERBOSE = false;
 	if (argc != 3){
 		cout<<"Usage: "<<argv[0]<<" <lre_file> <aig_file>"<<endl;
 		return 1;
