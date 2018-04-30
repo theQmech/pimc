@@ -49,6 +49,7 @@ while(currframe < maxframes){
 				else{
 					--stkptr
 					++currframe
+					cex = gen(cex, CNF_ARR[currframe])
 					CNF_ARR[currframe] ^= cex
 				}
 
@@ -58,6 +59,8 @@ while(currframe < maxframes){
 	else{
 		++currframe
 	}
+
+	BREAK
 
 	# PROP_CLAUSES(zero, currframe)
 	i = 0

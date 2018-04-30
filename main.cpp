@@ -6,7 +6,7 @@ symtab_ symtab;
 lre_driver driver;
 _result global_ret_value = _result::UNDEF;
 bool VERBOSE = false;
-bool DEBUG = false;
+bool DEBUG = true;
 
 void fillsymbols(){
 	symtab.addsymbol(type::cube, "P");

@@ -80,6 +80,7 @@ blank [ \t]
 "pre_state"     return yy::lre_parser::make_PRESTATE(loc);
 "conj_decomp"   return yy::lre_parser::make_CDECOMP(loc);
 "subsume"       return yy::lre_parser::make_SUBSUME(loc);
+"gen"           return yy::lre_parser::make_GEN(loc);
 "CNF_ARR"       return yy::lre_parser::make_CNFARR(loc);
 "CLS_ARR"       return yy::lre_parser::make_CLSARR(loc);
 "BREAK"         return yy::lre_parser::make_BREAK(loc);

@@ -39,5 +39,7 @@ void toPrime(region &U);
 void InitProperty(cube_ &U);
 void initTransition(region &U);
 void initInitStates(region &u);
+vector<lit> implicate(cube_ &, region &);
+vector<lit> rec_implicate(vector<lit>, vector<lit>, sat_solver *);
 
 #endif

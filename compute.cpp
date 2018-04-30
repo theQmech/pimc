@@ -36,6 +36,11 @@ data_struct *fetch_data(opd &opd_){
 		logAndStop("Should not reach here");
 }
 
+int fetch_idx(opd &opd_){
+	return ((opd_.ty==opd_type::num)?
+				opd_.val:((index_ *)fetch_data(opd_))->getval());
+}
+
 void ast_node::compute(){
 	logAndStop("Not implemented");
 }
@@ -68,11 +73,12 @@ void lre_node::compute(){
 
 		case node_type::for_stmt:{
 			fetch_data(opd1)->set(opd2.val);
-			int rval = (opd3.ty==opd_type::num)?opd3.val:((index_ *)fetch_data(opd3))->getval();
+			int rval = fetch_idx(opd3);
 			assert(opd2.val <= rval);
+
 			while(((index_ *)fetch_data(opd1))->getval() < rval){
 				n1->compute();
-				rval = (opd3.ty==opd_type::num)?opd3.val:((index_ *)fetch_data(opd3))->getval();
+				rval = fetch_idx(opd3);
 			}
 			break;
 		}
@@ -97,8 +103,12 @@ void lre_node::compute(){
 		case node_type::_break_:{
 			if (VERBOSE)
 				cout<<"At break point "<<loc<<endl;
-			if (DEBUG)
-				logAndStop("Breakpoint reached, run gdb to halt here");
+			if (DEBUG){
+				// ((region *)symtab[5].data)[0].print();
+				// ((region *)symtab[5].data)[1].print();
+				// ((region *)symtab[5].data)[2].print();
+				// logAndStop("Breakpoint reached, run gdb to halt here");
+			}
 			break;
 		}
 
@@ -146,35 +156,35 @@ void bool_node::compute(){
 			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) == (*fetch_data(opd2)));
 			else
-				result = (dynamic_cast<index_ *>(fetch_data(opd1))->getval() == opd2.val);
+				result = (fetch_idx(opd1) == opd2.val);
 			break;
 
 		case bool_op::_gt:
 			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) > (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() > opd2.val;
+				result = fetch_idx(opd1) > opd2.val;
 			break;
 
 		case bool_op::_lt:
 			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) < (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() < opd2.val;
+				result = fetch_idx(opd1) < opd2.val;
 			break;
 
 		case bool_op::_ge:
 			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) >= (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() >= opd2.val;
+				result = fetch_idx(opd1) >= opd2.val;
 			break;
 
 		case bool_op::_le:
 			if (opd2.ty != opd_type::num)
 				result = ((*fetch_data(opd1)) <= (*fetch_data(opd2)));
 			else
-				result = dynamic_cast<index_ *>(fetch_data(opd1))->getval() <= opd2.val;
+				result = fetch_idx(opd1) <= opd2.val;
 			break;
 
 		default:
@@ -273,6 +283,20 @@ void comp_node::compute(){
 				lhs->clear();
 			else
 				*lhs = (*rhs1)[res];
+
+			break;
+		}
+
+		case comp_type::_gen:{
+			cube_ *rval = dynamic_cast<cube_ *>(fetch_data(opd1));
+			cube_ *cex = dynamic_cast<cube_ *>(fetch_data(opd2));
+			region *reg = dynamic_cast<region *>(fetch_data(opd3));
+
+			assert(rval);
+			assert(cex);
+			assert(reg);
+
+			*rval = implicate(*cex, *reg);
 
 			break;
 		}

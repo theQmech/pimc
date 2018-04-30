@@ -342,6 +342,10 @@ void region::addClause(vector<lit> tmp, bool negate){
 
     if(!sanityCheck(tmp)) return;
 
+    if (tmp[0] == 32){
+        cout<<"here"<<endl;
+    }
+
     vClauses.push_back(tmp);
     nLits += tmp.size();
     nClauses++;

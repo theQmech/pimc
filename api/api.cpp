@@ -124,3 +124,63 @@ void InfoMan::load_network(Abc_Frame_t *pAbc){
 lit InfoMan::getP(){
     return pCnf->pVarNums[Aig_ObjId(Aig_ManCo(pAig, 0))];
 }
+
+vector<lit> implicate(cube_ &cex, region &phi){
+    sat_solver *pSolver = sat_solver_new();
+    assert(pSolver);
+
+    // add phi
+    phi.addToSolver(pSolver);
+
+    int status = sat_solver_solve(pSolver,
+                &cex.vLits[0], &cex.vLits[0] + cex.vLits.size(),
+                (ABC_INT64_T)0, (ABC_INT64_T)0,
+                (ABC_INT64_T)0, (ABC_INT64_T)0);
+    if(status != l_False){
+        logAndStop("Implicate precondition does not hold");
+    }
+
+    vector<lit> retval = rec_implicate(vector<lit>(), cex.vLits, pSolver);
+
+    if (pSolver)
+        sat_solver_delete(pSolver);
+
+    return retval;
+}
+
+vector<lit> rec_implicate(vector<lit> supp, vector<lit> comp, sat_solver *pSolver){
+    if(comp.size() == 1)
+        return comp;
+
+    vector<int> left(comp.begin(), comp.begin() + comp.size()/2);
+    vector<int> right(comp.begin() + comp.size()/2, comp.end());
+
+    int status;
+
+    status = sat_solver_solve(pSolver,
+                &left[0], &left[0] + left.size(),
+                (ABC_INT64_T)0, (ABC_INT64_T)0,
+                (ABC_INT64_T)0, (ABC_INT64_T)0);
+    if(status = l_False)
+        return rec_implicate(supp, left, pSolver);
+
+    status = sat_solver_solve(pSolver,
+                &right[0], &right[0] + right.size(),
+                (ABC_INT64_T)0, (ABC_INT64_T)0,
+                (ABC_INT64_T)0, (ABC_INT64_T)0);
+    if(status = l_False)
+        return rec_implicate(supp, right, pSolver);
+
+
+    vector<lit> supp1(supp.begin(), supp.end());
+    supp1.insert(supp1.begin(), right.begin(), right.end());
+    vector<lit> left0 = rec_implicate(supp1, right, pSolver);
+
+    vector<lit> supp2(supp.begin(), supp.end());
+    supp1.insert(supp1.begin(), left0.begin(), left0.end());
+    vector<lit> right0 = rec_implicate(supp2, right, pSolver);
+
+    // return
+    left0.insert(left0.begin(), right0.begin(), right0.end());
+    return left0;
+}
