@@ -69,7 +69,7 @@ int main(int argc, char *argv[]){
 	if (VERBOSE)
 		driver.root->print(0);
 
-	std::cout<<"---------------------------------------------"<<endl<<endl<<endl;
+	std::cout<<"--------------------------------------------"<<endl<<endl<<endl;
 
 	driver.root->compute();
 

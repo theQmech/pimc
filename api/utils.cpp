@@ -16,7 +16,7 @@ int readAig(Abc_Frame_t *pAbc, string fileName){
     int fUseResyn2  = 1; // copied from demo.c.
 
     RUN_CMD(pAbc, "read " + string(fileName)); // read the file
-    RUN_CMD(pAbc, "print_stats "); // print the numer of i/o latch and and gates
+    RUN_CMD(pAbc, "print_stats"); // print the numer of i/o latch and and gates
 
     // Following commands may modify network, sometimes even removing latches
     // (pdtvisgray0.aig). Keep them commented for now.
@@ -27,9 +27,14 @@ int readAig(Abc_Frame_t *pAbc, string fileName){
     // // dangling nodes, refactor and fraig the network
     // RUN_CMD(pAbc, "scleanup"); // Remove dangling nodes
     // if (fUseResyn2) // Copied from demo.c file
-    //     RUN_CMD(pAbc, "balance; rewrite -l; refactor -l; balance; rewrite -l; rewrite -lz; balance; refactor -lz; rewrite -lz; balance");
+    //     RUN_CMD(pAbc, "balance; rewrite -l; \
+    //         refactor -l; balance; rewrite -l; \
+    //         rewrite -lz; balance; refactor -lz; \
+    //         rewrite -lz; balance");
     // else
-    //     RUN_CMD(pAbc, "balance; rewrite -l; rewrite -lz; balance; rewrite -lz; balance");
+    //     RUN_CMD(pAbc, "balance; rewrite -l; \
+    //         rewrite -lz; balance; \
+    //         rewrite -lz; balance");
     // RUN_CMD(pAbc, "fraig");
     // RUN_CMD(pAbc, "print_stats");
 
@@ -75,11 +80,13 @@ void addCnfToSolver(sat_solver *pSat, Cnf_Dat_t *pCnf){
  * @param vClauses  [in]        Clauses
  * @param nVars     [in]        Number of variables in CNF
  */
-void addClausesToSolver(sat_solver *pSat, vector<vector<lit>> vClauses, int nVars){
+void
+addClausesToSolver(sat_solver *pSat, vector<vector<lit>> vClauses, int nVars){
     sat_solver_setnvars(pSat, nVars);
 
     for(int i=0; i<vClauses.size(); ++i){
-        if (!sat_solver_addclause(pSat, &vClauses[i][0], &vClauses[i][0]+vClauses[i].size()))
+        if (!sat_solver_addclause(pSat, &vClauses[i][0],
+                &vClauses[i][0] + vClauses[i].size()))
             assert(false);
     }
 }
@@ -173,11 +180,13 @@ void cube_::complement(){
 /*! Replace each non-primed variable by primed variable and vice-versa.
  *  Throws error if corresponding primed/nonprimed version doesn't exist.
  *  @param[in] toPrimeMap   Mapping from each nonprimed variable to its primed
-                            version and vice versa. Can be obtained from InfoMan.
+ *                          version and vice versa. Can be obtained from
+ *                          InfoMan.
  */
 void cube_::toPrime(unordered_map<int, int> &toPrimeMap){
     for(int i=0; i<nLits; ++i){
-        unordered_map<lit, lit>::iterator it = toPrimeMap.find(lit_var(vLits[i]));
+        unordered_map<lit, lit>::iterator
+                it = toPrimeMap.find(lit_var(vLits[i]));
         assert(it != toPrimeMap.end());
 
         vLits[i] = toLitCond(it->second, lit_sign(vLits[i]));
@@ -329,7 +338,7 @@ void region::operator=(Cnf_Dat_t *pCnf){
 /*! Add a clause to the CNF, treating the argument as clause to be added
  *  @param[in]  tmp     Vector to be added as clause. Has to be sorted and
  *                      should not be a tautology.
- *  @param[in]  negate  Set to true if each literal should be negated while adding
+ *  @param[in]  negate  Set to true if each literal should be negated
  */
 void region::addClause(vector<lit> tmp, bool negate){
     if (tmp.size() == 0) return;
@@ -452,12 +461,14 @@ void region::addToSolver(sat_solver *pSolver) const{
 /*! Replace each non-primed variable by primed variable and vice-versa.
  *  Throws error if corresponding primed/nonprimed version doesn't exist.
  *  @param[in] toPrimeMap   Mapping from each nonprimed variable to its primed
-                            version and vice versa. Can be obtained from InfoMan.
+ *                          version and vice versa. Can be obtained from
+ *                          InfoMan.
  */
 void region::toPrime(unordered_map<int, int> &toPrimeMap){
     for(int i=0; i<nClauses; ++i){
         for(int j=0; j<vClauses[i].size(); ++j){
-            unordered_map<lit, lit>::iterator it = toPrimeMap.find(lit_var(vClauses[i][j]));
+            unordered_map<lit, lit>::iterator
+                    it = toPrimeMap.find(lit_var(vClauses[i][j]));
             assert(it != toPrimeMap.end());
 
             vClauses[i][j] = toLitCond(it->second, lit_sign(vClauses[i][j]));

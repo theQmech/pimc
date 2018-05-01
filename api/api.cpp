@@ -113,7 +113,8 @@ void InfoMan::load_network(Abc_Frame_t *pAbc){
     Aig_Obj_t *pIn, *pOut;
     int k;
     Aig_ManForEachLiLoSeq(pAig, pOut, pIn, k){
-        lit in = pCnf->pVarNums[Aig_ObjId(pIn)], out = pCnf->pVarNums[Aig_ObjId(pOut)];
+        lit in = pCnf->pVarNums[Aig_ObjId(pIn)],
+            out = pCnf->pVarNums[Aig_ObjId(pOut)];
         toPrime[in] = out;
         toPrime[out] = in;
     }
@@ -148,7 +149,8 @@ vector<lit> implicate(cube_ &cex, region &phi){
     return retval;
 }
 
-vector<lit> rec_implicate(vector<lit> supp, vector<lit> comp, sat_solver *pSolver){
+vector<lit>
+rec_implicate(vector<lit> supp, vector<lit> comp, sat_solver *pSolver){
     if(comp.size() == 1)
         return comp;
 
@@ -183,4 +185,137 @@ vector<lit> rec_implicate(vector<lit> supp, vector<lit> comp, sat_solver *pSolve
     // return
     left0.insert(left0.begin(), right0.begin(), right0.end());
     return left0;
+}
+
+vector<lit> min_indc(cube_ &cex, region &init, region &phi){
+    region T;
+    initInitStates(T);
+    vector<lit> in_clause = cex.vLits;
+    for (auto &&it : in_clause)
+        it = lit_neg(it);
+
+    vector<lit> fixpoint = lic(T, init, phi, in_clause);
+    vector<lit> ret_val = mic(T, init, phi, fixpoint);
+
+    return ret_val;
+}
+
+vector<lit> mic(region &T, region &phi, region &init, vector<lit> in_clause){
+    assert(is_inductive(T, phi, init, in_clause));
+
+    vector<lit> curr_clause = in_clause;
+    while(curr_clause.size() > 0){
+        vector<lit> iter_clause(curr_clause.begin()+1, curr_clause.end());
+        bool found = false;
+
+        // iterate over all sub clauses of size less than one
+        for(int i=0; i<curr_clause.size()-1; ++i){
+            if (is_inductive(T, phi, init, iter_clause)){
+                found = true;
+                break;
+            }
+            iter_clause[i] = curr_clause[i];
+        }
+
+        if (!found)
+
+        return curr_clause;
+    }
+
+    logAndStop("Should not reach");
+}
+
+bool is_inductive(region &T, region &phi, region &init, vector<lit> in_clause){
+    cube_ cex_prime(in_clause);
+    cex_prime.complement();
+
+    sat_solver *pSolver = sat_solver_new();
+    assert(pSolver);
+
+    // Check that init ---> in_clause'
+    init.addToSolver(pSolver);
+
+    int status = sat_solver_solve(pSolver,
+                &cex_prime.vLits[0],
+                &cex_prime.vLits[0] + cex_prime.vLits.size(),
+                (ABC_INT64_T)0, (ABC_INT64_T)0,
+                (ABC_INT64_T)0, (ABC_INT64_T)0);
+    if (status == l_True)
+        return false;
+    else if (status == l_Undef){
+        logAndStop("SAT result undefined");
+    }
+
+    sat_solver_delete(pSolver);
+    pSolver = sat_solver_new();
+    assert(pSolver);
+
+    // Check if phi ^ in_clause ^ T -> in_clause'
+    phi.addToSolver(pSolver);
+    T.addToSolver(pSolver);
+    if (!sat_solver_addclause(pSolver, &in_clause[0],
+            &in_clause[0] + in_clause.size()))
+        assert(false);
+    status = sat_solver_solve(pSolver,
+                &cex_prime.vLits[0],
+                &cex_prime.vLits[0] + cex_prime.vLits.size(),
+                (ABC_INT64_T)0, (ABC_INT64_T)0,
+                (ABC_INT64_T)0, (ABC_INT64_T)0);
+    if (status == l_True)
+        return false;
+    else if (status == l_False)
+        return true;
+    else
+        logAndStop("SAT result undefined");
+}
+
+// if initiation is not satisifed, then return original clause
+// return clause (not cube)
+// TODO
+vector<lit> lic(region &T, region &init, region &phi, vector<lit> in_clause){
+    logAndStop("Not implemented");
+
+    vector<lit> curr_clause(in_clause.begin(), in_clause.end());
+    for (auto &&it : curr_clause)
+        it = lit_neg(it);
+
+    while(true){
+        sat_solver *pSolver = sat_solver_new();
+        assert(pSolver);
+
+        T.addToSolver(pSolver);
+        phi.addToSolver(pSolver);
+
+        if (!sat_solver_addclause(pSolver, &curr_clause[0],
+                &curr_clause[0] + curr_clause.size()))
+            assert(false);
+        cube_ cex_prime(curr_clause);
+        toPrime(cex_prime);
+        cex_prime.complement();
+
+        int status = sat_solver_solve(pSolver,
+                    &cex_prime.vLits[0],
+                    &cex_prime.vLits[0] + cex_prime.vLits.size(),
+                    (ABC_INT64_T)0, (ABC_INT64_T)0,
+                    (ABC_INT64_T)0, (ABC_INT64_T)0);
+        if(status == l_False){
+            return curr_clause;
+        }
+        else if (status == l_True){
+            vector<lit> vars;
+            for(auto it : curr_clause)
+                vars.push_back(lit_var(it));
+            int *asgn = Sat_SolverGetModel(pSolver, &vars[0], vars.size());
+            vector<lit> new_clause;
+            for(int i=0; i<curr_clause.size(); ++i)
+                if (asgn[i] == lit_neg(curr_clause[i]))
+                    new_clause.push_back(curr_clause[i]);
+            curr_clause.clear();
+            curr_clause.insert(curr_clause.end(),
+                    new_clause.begin(), new_clause.end());
+        }
+        else{
+            logAndStop("SAT result undefined");
+        }
+    }
 }

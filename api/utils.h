@@ -35,7 +35,8 @@ void logAndStop(string msg);
 int readAig(Abc_Frame_t *pAbc, string fileName);
 Cnf_Dat_t *aig2cnf(Aig_Man_t *pAig);
 void addCnfToSolver(sat_solver *pSat, Cnf_Dat_t *pCnf);
-void addClausesToSolver(sat_solver *pSat, vector<vector<lit>> vClauses, int nVars);
+void
+addClausesToSolver(sat_solver *pSat, vector<vector<lit>> vClauses, int nVars);
 
 /*! Data structure for a conjunction of literals i.e. a cube. The internal
     vector representation maintains the following invariant:
@@ -74,6 +75,7 @@ public:
  *  TODO Optimizations
  */
 class region : public data_struct{
+public:
     /// Number of variables in CNF.
     int nVars;
     /// Number of ckayses in CNF.
@@ -85,7 +87,6 @@ class region : public data_struct{
 
     bool sanityCheck(vector<lit> &U);
 
-public:
     region();
     region(Cnf_Dat_t *pCnf);
     void initialize(vector<vector<lit>> init, int nVars_);

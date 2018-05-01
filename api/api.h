@@ -23,7 +23,7 @@ public:
     Cnf_Dat_t *Network_Cnf();
     /// For each latch, maps input variable to output variable and vice versa.
     unordered_map<int, int> toPrime;
-    /// Stores initial value of each register. For now we assume single initial state.
+    /// Stores initial value of each register. For now, assume single state.
     vector<vector<lit>> cInit;
 
     InfoMan();
@@ -39,7 +39,13 @@ void toPrime(region &U);
 void InitProperty(cube_ &U);
 void initTransition(region &U);
 void initInitStates(region &u);
+
 vector<lit> implicate(cube_ &, region &);
 vector<lit> rec_implicate(vector<lit>, vector<lit>, sat_solver *);
+vector<lit> min_indc(cube_ &, region &, region &);
+vector<lit> lic(region &, region &, region &, vector<lit>);
+
+vector<lit> mic(region &, region &, region &, vector<lit>);
+bool is_inductive(region &, region &, region &, vector<lit>);
 
 #endif

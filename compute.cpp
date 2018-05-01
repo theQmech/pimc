@@ -17,7 +17,6 @@ data_struct *fetch_data(opd &opd_){
 	if (opd_.ty == opd_type::var)
 		return symtab[opd_.val].data;
 	else if (opd_.ty == opd_type::arr){
-		assert(0<=opd_.idx && opd_.idx<ARR_SZ);
 
 		region *reg = dynamic_cast<region *>(symtab[opd_.val].data);
 		cube_ *cub = dynamic_cast<cube_ *>(symtab[opd_.val].data);
@@ -103,12 +102,8 @@ void lre_node::compute(){
 		case node_type::_break_:{
 			if (VERBOSE)
 				cout<<"At break point "<<loc<<endl;
-			if (DEBUG){
-				// ((region *)symtab[5].data)[0].print();
-				// ((region *)symtab[5].data)[1].print();
-				// ((region *)symtab[5].data)[2].print();
-				// logAndStop("Breakpoint reached, run gdb to halt here");
-			}
+			if (DEBUG)
+				logAndStop("Breakpoint reached, run gdb to halt here");
 			break;
 		}
 
@@ -202,13 +197,6 @@ void comp_node::compute(){
 				(*fetch_data(opd1)) = (*fetch_data(opd2));
 			break;
 
-		case comp_type::_access:{
-			vector<lit> cl = (*(dynamic_cast<region *>(fetch_data(opd2))))[((index_ *)fetch_data(opd3))->getval()];
-			*(dynamic_cast<cube_ *>(fetch_data(opd1))) = cl;
-			(dynamic_cast<cube_ *>(fetch_data(opd1)))->complement();
-			break;
-		}
-
 		case comp_type::_conjunct:{
 			fetch_data(opd1)->conjunct(*fetch_data(opd2));
 			break;
@@ -297,6 +285,22 @@ void comp_node::compute(){
 			assert(reg);
 
 			*rval = implicate(*cex, *reg);
+
+			break;
+		}
+
+		case comp_type::_gen2:{
+			cube_ *rval = dynamic_cast<cube_ *>(fetch_data(opd1));
+			cube_ *cex = dynamic_cast<cube_ *>(fetch_data(opd2));
+			region *init = dynamic_cast<region *>(fetch_data(opd3));
+			region *phi = dynamic_cast<region *>(fetch_data(opd4));
+
+			assert(rval);
+			assert(cex);
+			assert(init);
+			assert(phi);
+
+			*rval = min_indc(*cex, *init, *phi);
 
 			break;
 		}
@@ -447,10 +451,6 @@ std::ostream& operator<<(std::ostream &os, comp_type &ty){
 			cout<<"_subsume";
 			break;
 
-		case comp_type::_access:
-			cout<<"_access";
-			break;
-
 		case comp_type::_copy:
 			cout<<"_copy";
 			break;
@@ -491,7 +491,8 @@ void ast_node::print(int num_spaces){
 }
 
 void lre_node::print(int num_spaces){
-	cout<<string(num_spaces++, ' ')<<"[lre_node]\t"<<ty<<"\t"<<loc<<"\t"<<this<<endl;
+	cout<<string(num_spaces++, ' ')
+		<<"[lre_node]\t"<<ty<<"\t"<<loc<<"\t"<<this<<endl;
 	if (n1)
 		n1->print(num_spaces);
 	if (n2)
@@ -504,7 +505,8 @@ void lre_node::print(int num_spaces){
 }
 
 void bool_node::print(int num_spaces){
-	cout<<string(num_spaces++, ' ')<<"[bool_node]\t"<<op<<"\t"<<loc<<"\t"<<this<<endl;
+	cout<<string(num_spaces++, ' ')
+		<<"[bool_node]\t"<<op<<"\t"<<loc<<"\t"<<this<<endl;
 	if (n1)
 		n1->print(num_spaces);
 	if (n2)
@@ -514,7 +516,8 @@ void bool_node::print(int num_spaces){
 }
 
 void comp_node::print(int num_spaces){
-	cout<<string(num_spaces++, ' ')<<"[comp_node]\t"<<op<<"\t"<<loc<<"\t"<<this<<endl;
+	cout<<string(num_spaces++, ' ')
+		<<"[comp_node]\t"<<op<<"\t"<<loc<<"\t"<<this<<endl;
 	if (n1)
 		n1->print(num_spaces);
 	if (n2)

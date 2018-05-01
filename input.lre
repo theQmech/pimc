@@ -47,10 +47,10 @@ while(currframe < maxframes){
 					--currframe
 				}
 				else{
+					cex = gen2(cex, CNF_ARR[zero], CNF_ARR[currframe])
+					CNF_ARR[currframe] ^= cex
 					--stkptr
 					++currframe
-					cex = gen(cex, CNF_ARR[currframe])
-					CNF_ARR[currframe] ^= cex
 				}
 
 			}

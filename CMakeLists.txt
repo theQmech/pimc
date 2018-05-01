@@ -12,6 +12,7 @@ if(NOT LIBABC)
   message(FATAL_ERROR "ABC shared library not found, please check ABC_DIR path")
 endif()
 
-include_directories("${ABC_DIR}/src" "." "./lre" "./api" ${CMAKE_BINARY_DIR}/lre)
+include_directories("${ABC_DIR}/src" "." "./lre" "./api"
+	${CMAKE_BINARY_DIR}/lre)
 add_executable(pimc main.cpp comm.cpp compute.cpp)
 target_link_libraries(pimc lre api ${LIBABC})

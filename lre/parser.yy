@@ -82,6 +82,7 @@ class lre_driver;
   CDECOMP       "CDECOMP"
   SUBSUME       "SUBSUME"
   GEN           "GEN"
+  GEN2          "GEN2"
   BREAK         "BREAK"
   SEPARATOR     "%%"
 ;
@@ -139,8 +140,8 @@ body:
   %empty                      { $$ = new lre_node(@$, node_type::empty);}
 | body breakpoint             { $$ = new lre_node(@$, $1, $2, node_type::compose); }
 | body while_block            { $$ = new lre_node(@$, $1, $2, node_type::compose); }
-| body for_block            { $$ = new lre_node(@$, $1, $2, node_type::compose); }
-| body dowhile_block            { $$ = new lre_node(@$, $1, $2, node_type::compose); }
+| body for_block              { $$ = new lre_node(@$, $1, $2, node_type::compose); }
+| body dowhile_block          { $$ = new lre_node(@$, $1, $2, node_type::compose); }
 | body if_block               { $$ = new lre_node(@$, $1, $2, node_type::compose); }
 | body exp                    { $$ = new lre_node(@$, $1, $2, node_type::compose); }
 ;
@@ -325,6 +326,18 @@ exp:
       yy::lre_parser::error(@7, "data type incompat");
     $$ = new comp_node(@$, $1, $5, $7, comp_type::_gen);
   }
+| label_rev "=" "GEN2" "(" label_rev "," label_rev "," label_rev ")"
+  {
+    if (symtab[$1.val].entry_type != type::cube)
+      yy::lre_parser::error(@1, "data type incompat");
+    if (symtab[$5.val].entry_type != type::cube)
+      yy::lre_parser::error(@5, "data type incompat");
+    if (symtab[$7.val].entry_type != type::region)
+      yy::lre_parser::error(@7, "data type incompat");
+    if (symtab[$7.val].entry_type != type::region)
+      yy::lre_parser::error(@9, "data type incompat");
+    $$ = new comp_node(@$, $1, $5, $7, $9, comp_type::_gen2);
+  }
 | label_rev "=" num_opd
   {
     if (symtab[$1.val].entry_type != type::index)
@@ -363,8 +376,14 @@ label_rev:
     }
     $$ = opd(symtab.get_symbol($1), opd_type::var);
   }
-| "CNF_ARR" "[" "identifier" "]"              { $$ = opd(symtab.get_symbol("CNF_ARR"), symtab.get_symbol($3), opd_type::arr); }
-| "CLS_ARR" "[" "identifier" "]"              { $$ = opd(symtab.get_symbol("CLS_ARR"), symtab.get_symbol($3), opd_type::arr); }
+| "CNF_ARR" "[" "identifier" "]"
+  {
+    $$ = opd(symtab.get_symbol("CNF_ARR"), symtab.get_symbol($3), opd_type::arr);
+  }
+| "CLS_ARR" "[" "identifier" "]"
+  {
+    $$ = opd(symtab.get_symbol("CLS_ARR"), symtab.get_symbol($3), opd_type::arr);
+  }
 ;
 
 %%

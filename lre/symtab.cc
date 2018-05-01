@@ -1,6 +1,7 @@
 #include "symtab.h"
 
-entry::entry(std::string name_, type ty_, bool isArray_):name(name_),entry_type(ty_), isArray(isArray_){
+entry::entry(std::string name_, type ty_, bool isArray_)
+:name(name_),entry_type(ty_), isArray(isArray_){
 	data = make_ds(ty_, isArray_, ARR_SZ);
 }
 
