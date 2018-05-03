@@ -218,8 +218,9 @@ vector<lit> mic(region &T, region &phi, region &init, vector<lit> in_clause){
         }
 
         if (!found)
-
-        return curr_clause;
+            return curr_clause;
+        else
+            curr_clause = iter_clause;
     }
 
     logAndStop("Should not reach");
@@ -273,13 +274,33 @@ bool is_inductive(region &T, region &phi, region &init, vector<lit> in_clause){
 // return clause (not cube)
 // TODO
 vector<lit> lic(region &T, region &init, region &phi, vector<lit> in_clause){
-    logAndStop("Not implemented");
+    int status;
 
     vector<lit> curr_clause(in_clause.begin(), in_clause.end());
-    for (auto &&it : curr_clause)
-        it = lit_neg(it);
+    vector<lit> ret_val = curr_clause;
+
+    sat_solver *initSat = sat_solver_new();
+    assert(initSat);
+    init.addToSolver(initSat);
 
     while(true){
+        assert(curr_clause.size() > 0);
+
+        cube_ cex(curr_clause);
+        cex.complement();
+        cube_ cex_prime(cex);
+        toPrime(cex_prime);
+
+        status = sat_solver_solve(initSat,
+                    &cex.vLits[0],
+                    &cex.vLits[0] + cex.vLits.size(),
+                    (ABC_INT64_T)0, (ABC_INT64_T)0,
+                    (ABC_INT64_T)0, (ABC_INT64_T)0);
+        if (status == l_True)
+            break;
+        else if (status == l_Undef)
+            logAndStop("SAT result undefined");
+
         sat_solver *pSolver = sat_solver_new();
         assert(pSolver);
 
@@ -289,17 +310,14 @@ vector<lit> lic(region &T, region &init, region &phi, vector<lit> in_clause){
         if (!sat_solver_addclause(pSolver, &curr_clause[0],
                 &curr_clause[0] + curr_clause.size()))
             assert(false);
-        cube_ cex_prime(curr_clause);
-        toPrime(cex_prime);
-        cex_prime.complement();
 
-        int status = sat_solver_solve(pSolver,
+        status = sat_solver_solve(pSolver,
                     &cex_prime.vLits[0],
                     &cex_prime.vLits[0] + cex_prime.vLits.size(),
                     (ABC_INT64_T)0, (ABC_INT64_T)0,
                     (ABC_INT64_T)0, (ABC_INT64_T)0);
         if(status == l_False){
-            return curr_clause;
+            break;
         }
         else if (status == l_True){
             vector<lit> vars;
@@ -308,14 +326,19 @@ vector<lit> lic(region &T, region &init, region &phi, vector<lit> in_clause){
             int *asgn = Sat_SolverGetModel(pSolver, &vars[0], vars.size());
             vector<lit> new_clause;
             for(int i=0; i<curr_clause.size(); ++i)
-                if (asgn[i] == lit_neg(curr_clause[i]))
+                if (asgn[i] != lit_sign(curr_clause[i]))
                     new_clause.push_back(curr_clause[i]);
+            if (new_clause.size() == curr_clause.size())
+                break;
             curr_clause.clear();
             curr_clause.insert(curr_clause.end(),
                     new_clause.begin(), new_clause.end());
+            ret_val = curr_clause;
         }
         else{
             logAndStop("SAT result undefined");
         }
     }
+
+    return ret_val;
 }

@@ -14,5 +14,5 @@ endif()
 
 include_directories("${ABC_DIR}/src" "." "./lre" "./api"
 	${CMAKE_BINARY_DIR}/lre)
-add_executable(pimc main.cpp comm.cpp compute.cpp)
+add_executable(pimc main.cpp comm.cpp compute.cpp print.cpp)
 target_link_libraries(pimc lre api ${LIBABC})

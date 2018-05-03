@@ -5,8 +5,8 @@ InfoMan man_t;
 symtab_ symtab;
 lre_driver driver;
 _result global_ret_value = _result::UNDEF;
-bool VERBOSE = false;
-bool DEBUG = true;
+bool VERBOSE = true;
+bool DEBUG = false;
 
 void fillsymbols(){
 	symtab.addsymbol(type::cube, "P");

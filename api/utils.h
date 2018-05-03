@@ -13,7 +13,6 @@ Aig_Man_t * Abc_NtkToDar(Abc_Ntk_t * pNtk, int fExors, int fRegisters);
 #include "../comm.h"
 #include <iostream>
 #include <vector>
-#include <stack>
 #include <unordered_map>
 #include <algorithm>
 

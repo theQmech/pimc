@@ -17,10 +17,10 @@ if (cex){
 	CLS_ARR[stkptr] = cex
 	return 0
 }
-BREAK
 
 ++currframe
 while(currframe < maxframes){
+
 	cex = check_safety(CNF_ARR[currframe])
 	if (cex){
 
@@ -47,7 +47,9 @@ while(currframe < maxframes){
 					--currframe
 				}
 				else{
+					BREAK
 					cex = gen2(cex, CNF_ARR[zero], CNF_ARR[currframe])
+					BREAK
 					CNF_ARR[currframe] ^= cex
 					--stkptr
 					++currframe
@@ -59,8 +61,6 @@ while(currframe < maxframes){
 	else{
 		++currframe
 	}
-
-	BREAK
 
 	# PROP_CLAUSES(zero, currframe)
 	i = 0
