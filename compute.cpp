@@ -6,6 +6,8 @@
 extern bool VERBOSE;
 extern bool DEBUG;
 
+void extra_debug();
+
 type fetch_type(opd &opd_){
 	if (opd_.ty == opd_type::num)
 		assert(false);
@@ -100,6 +102,7 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:{
+			extra_debug();
 			if (VERBOSE)
 				cout<<"At break point "<<loc<<endl;
 			if (DEBUG)
@@ -270,7 +273,7 @@ void comp_node::compute(){
 			if (res == -1)
 				lhs->clear();
 			else
-				*lhs = (*rhs1)[res];
+				*lhs = (*rhs2)[res];
 
 			break;
 		}
@@ -300,6 +303,13 @@ void comp_node::compute(){
 			assert(init);
 			assert(phi);
 
+			if (cex->vLits.size() == 4){
+				if (cex->vLits[0] == 40 && cex->vLits[1] == 42 && cex->vLits[2] == 44
+					&& cex->vLits[3] == 46)
+					cout<<"  "<<endl;
+			}
+
+
 			*rval = min_indc(*cex, *init, *phi);
 			rval->complement();
 
@@ -309,8 +319,11 @@ void comp_node::compute(){
 		case comp_type::_return:
 			if (val == 0)
 				global_ret_value = _result::SAT;
-			else
+			else if (val == 1)
 				global_ret_value = _result::UNSAT;
+			else
+				global_ret_value = _result::UNDEF;
+			// extra_debug();
 			handle_exit();
 			break;
 
@@ -318,4 +331,74 @@ void comp_node::compute(){
 			logAndStop("Should not reach here");
 			break;
 	}
+}
+
+void extra_debug(){
+	// cout<<"DEBUG_START--------------------------------------------------"<<endl;
+	// cout<<"cex :"<<endl;
+	// ((cube_ *)symtab[symtab.get_symbol("cex")].data)->print();
+	// cout<<"maxframe :\t";
+
+	cout<<((index_ *)symtab[symtab.get_symbol("currframe")].data)->getval()<<endl;
+	region *frame = (region *)symtab[symtab.get_symbol("CNF_ARR")].data;
+	int maxfram = ((index_ *)symtab[symtab.get_symbol("currframe")].data)->getval();
+
+	// cube_ cex_____ = *(cube_ *)symtab[symtab.get_symbol("cex")].data;
+	// if (maxfram == 1)
+	// 	if (cex_____.vLits[0] == 42 && cex_____.vLits[1] == 46){
+	// 		++maxfram;
+	// 		cout<<"  "<<endl;
+	// 	}
+
+	for(int i=0; i<maxfram; ++i){
+		int res = frame[i].implies(frame[i+1]);
+		if (res > -1){
+			cout<<"Frame_"<<i<<" does not imply Frame_"<<i+1<<endl;
+			frame[i].print();
+			frame[i+1].print();
+			assert(false);
+		}
+		else
+			cout<<"Frame_"<<i<<"\t\t-->\tFrame_"<<i+1<<endl;
+	}
+
+	cout<<endl;
+
+	for(int i=0; i<maxfram; ++i){
+		int res = frame[i+1].implies(frame[i]);
+		if (res > -1){
+		}
+		else
+			cout<<"Frame_"<<i+1<<"\t\t-->\tFrame_"<<i<<endl;
+	}
+
+	cout<<endl;
+
+	for(int i=0; i<maxfram; ++i){
+
+		region l1;
+		initTransition(l1);
+		l1.conjunct(frame[i]);
+
+		region l2(frame[i+1]);
+		toPrime(l2);
+
+		int res = l1.implies(l2);
+		if (res > -1){
+			cout<<"Frame_"<<i<<" ^ T does not imply Frame_"<<i+1<<"'"<<endl;
+			frame[i].print();
+			frame[i+1].print();
+			l1.print();
+			l2.print();
+			cout<<res<<endl;
+			assert(false);
+		}
+		else
+			cout<<"Frame_"<<i<<" ^ T\t\t-->\tFrame_"<<i+1<<"'"<<endl;
+	}
+
+	cout<<endl;
+	cout<<"DEBUG_END----------------------------------------------------"<<endl;
+	cout<<endl;
+
 }

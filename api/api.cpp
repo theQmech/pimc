@@ -25,6 +25,13 @@ void toPrime(cube_ &U){
     U.toPrime(man_t.toPrime);
 }
 
+//! For each primed(nonprimed) literal, flip to its nonprimed(primed) version.
+//! @param[in]      U       cube_ whose variable are to be flipped. Each literal
+///                         must have a valid counterpart.
+void toPrime(region &U){
+    U.toPrime(man_t.toPrime);
+}
+
 //! @return A single literal cube_. To set the safety property(P) to true,
 //! set this literal to true. To set P' to false, set negation of this literal
 //! to true.
@@ -189,13 +196,13 @@ rec_implicate(vector<lit> supp, vector<lit> comp, sat_solver *pSolver){
 
 vector<lit> min_indc(cube_ &cex, region &init, region &phi){
     region T;
-    initInitStates(T);
+    initTransition(T);
     vector<lit> in_clause = cex.vLits;
     for (auto &&it : in_clause)
         it = lit_neg(it);
 
-    vector<lit> fixpoint = lic(T, init, phi, in_clause);
-    vector<lit> ret_val = mic(T, init, phi, fixpoint);
+    vector<lit> fixpoint = lic(T, phi, init, in_clause);
+    vector<lit> ret_val = mic(T, phi, init, fixpoint);
 
     return ret_val;
 }
@@ -204,7 +211,7 @@ vector<lit> mic(region &T, region &phi, region &init, vector<lit> in_clause){
     assert(is_inductive(T, phi, init, in_clause));
 
     vector<lit> curr_clause = in_clause;
-    while(curr_clause.size() > 0){
+    while(curr_clause.size() > 1){
         vector<lit> iter_clause(curr_clause.begin()+1, curr_clause.end());
         bool found = false;
 
@@ -216,6 +223,11 @@ vector<lit> mic(region &T, region &phi, region &init, vector<lit> in_clause){
             }
             iter_clause[i] = curr_clause[i];
         }
+        if (!found){
+            if (is_inductive(T, phi, init, iter_clause)){
+                found = true;
+            }
+        }
 
         if (!found)
             return curr_clause;
@@ -223,22 +235,29 @@ vector<lit> mic(region &T, region &phi, region &init, vector<lit> in_clause){
             curr_clause = iter_clause;
     }
 
+    if (curr_clause.size() == 1){
+        assert(is_inductive(T, phi, init, curr_clause));
+        return curr_clause;
+    }
+
     logAndStop("Should not reach");
 }
 
 bool is_inductive(region &T, region &phi, region &init, vector<lit> in_clause){
-    cube_ cex_prime(in_clause);
-    cex_prime.complement();
+    cube_ cex(in_clause);
+    cex.complement();
+    cube_ cex_prime(cex);
+    toPrime(cex_prime);
 
     sat_solver *pSolver = sat_solver_new();
     assert(pSolver);
 
-    // Check that init ---> in_clause'
     init.addToSolver(pSolver);
 
+    // Check that init ---> in_clause
     int status = sat_solver_solve(pSolver,
-                &cex_prime.vLits[0],
-                &cex_prime.vLits[0] + cex_prime.vLits.size(),
+                &cex.vLits[0],
+                &cex.vLits[0] + cex.vLits.size(),
                 (ABC_INT64_T)0, (ABC_INT64_T)0,
                 (ABC_INT64_T)0, (ABC_INT64_T)0);
     if (status == l_True)
@@ -291,6 +310,7 @@ vector<lit> lic(region &T, region &init, region &phi, vector<lit> in_clause){
         cube_ cex_prime(cex);
         toPrime(cex_prime);
 
+        // check if init -> curr_clause
         status = sat_solver_solve(initSat,
                     &cex.vLits[0],
                     &cex.vLits[0] + cex.vLits.size(),
@@ -311,12 +331,14 @@ vector<lit> lic(region &T, region &init, region &phi, vector<lit> in_clause){
                 &curr_clause[0] + curr_clause.size()))
             assert(false);
 
+        // check if phi ^ T ^ curr_clause -> curr_clause'
         status = sat_solver_solve(pSolver,
                     &cex_prime.vLits[0],
                     &cex_prime.vLits[0] + cex_prime.vLits.size(),
                     (ABC_INT64_T)0, (ABC_INT64_T)0,
                     (ABC_INT64_T)0, (ABC_INT64_T)0);
         if(status == l_False){
+            // implication holds, LIC found
             break;
         }
         else if (status == l_True){
@@ -324,15 +346,14 @@ vector<lit> lic(region &T, region &init, region &phi, vector<lit> in_clause){
             for(auto it : curr_clause)
                 vars.push_back(lit_var(it));
             int *asgn = Sat_SolverGetModel(pSolver, &vars[0], vars.size());
+
             vector<lit> new_clause;
             for(int i=0; i<curr_clause.size(); ++i)
                 if (asgn[i] != lit_sign(curr_clause[i]))
                     new_clause.push_back(curr_clause[i]);
             if (new_clause.size() == curr_clause.size())
                 break;
-            curr_clause.clear();
-            curr_clause.insert(curr_clause.end(),
-                    new_clause.begin(), new_clause.end());
+            curr_clause = new_clause;
             ret_val = curr_clause;
         }
         else{

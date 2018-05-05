@@ -21,22 +21,22 @@ int readAig(Abc_Frame_t *pAbc, string fileName){
     // Following commands may modify network, sometimes even removing latches
     // (pdtvisgray0.aig). Keep them commented for now.
 
-    // RUN_CMD(pAbc, "balance"); // balance and cleanup
+    RUN_CMD(pAbc, "balance"); // balance and cleanup
 
-    // // The next few commands try to reduce the size of the network, remove
-    // // dangling nodes, refactor and fraig the network
-    // RUN_CMD(pAbc, "scleanup"); // Remove dangling nodes
-    // if (fUseResyn2) // Copied from demo.c file
-    //     RUN_CMD(pAbc, "balance; rewrite -l; \
-    //         refactor -l; balance; rewrite -l; \
-    //         rewrite -lz; balance; refactor -lz; \
-    //         rewrite -lz; balance");
-    // else
-    //     RUN_CMD(pAbc, "balance; rewrite -l; \
-    //         rewrite -lz; balance; \
-    //         rewrite -lz; balance");
-    // RUN_CMD(pAbc, "fraig");
-    // RUN_CMD(pAbc, "print_stats");
+    // The next few commands try to reduce the size of the network, remove
+    // dangling nodes, refactor and fraig the network
+    RUN_CMD(pAbc, "scleanup"); // Remove dangling nodes
+    if (fUseResyn2) // Copied from demo.c file
+        RUN_CMD(pAbc, "balance; rewrite -l; \
+            refactor -l; balance; rewrite -l; \
+            rewrite -lz; balance; refactor -lz; \
+            rewrite -lz; balance");
+    else
+        RUN_CMD(pAbc, "balance; rewrite -l; \
+            rewrite -lz; balance; \
+            rewrite -lz; balance");
+    RUN_CMD(pAbc, "fraig");
+    RUN_CMD(pAbc, "print_stats");
 
     return 0;
 }
@@ -224,7 +224,7 @@ bool cube_::operator==(data_struct &U){
 
 void cube_::print(){
     cout<<"-------------------------------------------------------------"<<endl;
-    cout<<nLits<<"\t";
+    cout<<"nLits:\t"<<nLits<<"\t";
     for(int i=0; i<vLits.size(); ++i){
         cout<<vLits[i]<<" ";
     }
@@ -242,9 +242,13 @@ bool region::sanityCheck(vector<lit> &U){
         if (lit_var(U[i]) == lit_var(U[i+1]))
             return false;
 
-    for(int i=0; i<nClauses; ++i)
-        if (std::equal(U.begin(), U.end(), vClauses[i].begin()))
-            return false;
+    assert(nClauses == vClauses.size());
+
+    for(int i=0; i<nClauses; ++i){
+        if (U.size() == vClauses[i].size())
+            if (std::equal(U.begin(), U.end(), vClauses[i].begin()))
+                return false;
+    }
 
     return true;
 }
@@ -271,13 +275,15 @@ region::region(Cnf_Dat_t *pCnf){
     @param[in] nVars_  Number of variables in CNF.
  */
 void region::initialize(vector<vector<lit>> init, int nVars_){
+    nClauses = nLits = 0;
+    nVars = nVars_;
+    vClauses.clear();
+
     for(int i=0; i<init.size(); ++i){
         sort(init.begin(), init.end());
         assert(sanityCheck(init[i]));
     }
 
-    nClauses = nLits = 0;
-    nVars = nVars_;
     vClauses.resize(init.size(), vector<lit>());
     for(int i=0; i<vClauses.size(); ++i){
         vClauses[i].resize(init[i].size(), -1);
@@ -351,10 +357,6 @@ void region::addClause(vector<lit> tmp, bool negate){
 
     if(!sanityCheck(tmp)) return;
 
-    if (tmp[0] == 32){
-        cout<<"here"<<endl;
-    }
-
     vClauses.push_back(tmp);
     nLits += tmp.size();
     nClauses++;
@@ -382,7 +384,7 @@ void region::conjunct(data_struct &U){
 
 void region::print(){
     cout<<"-------------------------------------------------------------"<<endl;
-    cout<<nVars<<"\t"<<nClauses<<"\t"<<nLits<<endl;
+    cout<<"nVars\t"<<nVars<<"\t"<<"nClauses\t"<<nClauses<<"\t"<<"nLits\t"<<nLits<<endl;
     for(int i=0; i<nClauses; ++i){
         for(int j=0; j<vClauses[i].size(); ++j)
             cout<<vClauses[i][j]<<" ";
@@ -442,6 +444,25 @@ int region::implies(const region &B) const{
             continue;
         }
         else{
+            // cout<<endl;
+            // cout<<"Printing model"<<endl;
+            // Aig_Obj_t *pObj;
+            // Aig_Man_t *pNtk = man_t.AigNtk();
+            // Cnf_Dat_t *pCnf = man_t.Network_Cnf();
+            // vector<lit> vars(2*Aig_ManRegNum(pNtk));
+            // int idx = 0;
+            // int k;
+            // Aig_ManForEachLoSeq(pNtk, pObj, k)
+            //     vars[idx++] = pCnf->pVarNums[Aig_ObjId(pObj)];
+            // Aig_ManForEachLiSeq(pNtk, pObj, k)
+            //     vars[idx++] = pCnf->pVarNums[Aig_ObjId(pObj)];
+
+            // int *asgn = Sat_SolverGetModel(pSolver, &vars[0], vars.size());
+            // for(int i=0; i<vars.size(); ++i)
+            //     cout<<toLitCond(vars[i], !asgn[i])<<"\t";
+
+            // cout<<endl;
+
             ret_val = i;
             break;
         }
@@ -569,6 +590,7 @@ void coll_::operator=(const region &init){
     for(int i=0; i<sz; ++i){
         vMem[i] = new cube_();
         (*dynamic_cast<cube_ *>(vMem[i])) = init[i];
+        dynamic_cast<cube_ *>(vMem[i])->complement();
     }
 }
 

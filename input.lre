@@ -19,6 +19,25 @@ if (cex){
 }
 
 ++currframe
+
+# PROP_CLAUSES(zero, currframe)
+i = 0
+j = 1
+while(i < currframe){
+	cls_set = conj_decomp(CNF_ARR[i], 0)
+	for(cex : cls_set){
+		cexprev = pre_state(CNF_ARR[i], cex, 0)
+		if (cexprev){
+
+		}
+		else{
+			CNF_ARR[j] ^= cex
+		}
+	}
+	++i
+	++j
+}
+
 while(currframe < maxframes){
 
 	cex = check_safety(CNF_ARR[currframe])
@@ -34,14 +53,15 @@ while(currframe < maxframes){
 			}
 			else{
 				cex = CLS_ARR[stkptr]
-				i = 1
-				while (i <= currframe){
-					CNF_ARR[i] ^= cex
-					++i
-				}
 
 				cexprev = pre_state(CNF_ARR[currframe], cex, 0)
 				if (cexprev){
+					i = 1
+					while (i <= currframe){
+						CNF_ARR[i] ^= cex
+						++i
+					}
+
 					++stkptr
 					CLS_ARR[stkptr] = cexprev
 					--currframe
@@ -50,9 +70,15 @@ while(currframe < maxframes){
 					BREAK
 					cex = gen2(cex, CNF_ARR[zero], CNF_ARR[currframe])
 					BREAK
-					CNF_ARR[currframe] ^= cex
 					--stkptr
 					++currframe
+
+					i = 1
+					while (i <= currframe){
+						CNF_ARR[i] ^= cex
+						++i
+					}
+
 				}
 
 			}
@@ -70,7 +96,6 @@ while(currframe < maxframes){
 		for(cex : cls_set){
 			cexprev = pre_state(CNF_ARR[i], cex, 0)
 			if (cexprev){
-
 			}
 			else{
 				CNF_ARR[j] ^= cex
@@ -81,19 +106,27 @@ while(currframe < maxframes){
 	}
 
 
-	# CHECK_FRAMES_EQUAL(zero, currframe)
+	# CHECK_FRAMES_EQUAL(zero, currframe-1)
 	i = 0
 	j = 1
+	--currframe
 	while (i < currframe){
 		cex = subsume(CNF_ARR[j], CNF_ARR[i])
 		if(cex){
 		}
 		else{
-			return 1
+			cex = check_safety(CNF_ARR[j])
+			if (cex){
+			}
+			else{
+				return 1
+			}
 		}
 		++i
 		++j
 	}
+	++currframe
 
 }
-return 0
+
+return 2
