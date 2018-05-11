@@ -1,12 +1,31 @@
 #include "api.h"
 
 void handle_exit(){
-    if (global_ret_value == _result::SAT)
-        std::cout<<"Result: SAT"<<std::endl;
-    else if (global_ret_value == _result::UNSAT)
-        std::cout<<"Result: UNS"<<std::endl;
-    else if (global_ret_value == _result::UNDEF)
-        std::cout<<"Result: UNDEF"<<std::endl;
+    switch (global_ret_value){
+        case _result::SAT:
+            cout<<"sat"<<endl;
+            break;
+
+        case _result::UNSAT:
+            cout<<"uns"<<endl;
+            break;
+
+        case _result::TIMEOUT:
+            cout<<"time"<<endl;
+            break;
+
+        case _result::EMEM:
+            cout<<"mem"<<endl;
+            break;
+
+        case _result::UNDEF:
+            cout<<"unk"<<endl;
+            break;
+
+        default:
+            cout<<"unhandled"<<endl;
+            break;
+    }
 
     Abc_Stop();
 
@@ -97,7 +116,7 @@ Cnf_Dat_t *InfoMan::Network_Cnf(){
  *  @param[in]  pAbc        Pointer to ABC Frame holding the network
  */
 void InfoMan::load_network(Abc_Frame_t *pAbc){
-    cout<<"Loading network"<<endl;
+    // cout<<"Loading network"<<endl;
 
     pNtk = Abc_FrameReadNtk(pAbc);
     pAig = Abc_NtkToDar(pNtk, 0, 1);
@@ -108,7 +127,7 @@ void InfoMan::load_network(Abc_Frame_t *pAbc){
     cInit.resize(Aig_ManRegNum(pAig), vector<int>(1, -1));
     int i=0, j=0;
     Abc_Obj_t *pLatch;
-    cout<<"Num regs:\t"<<pAig->nRegs<<endl;
+    // cout<<"Num regs:\t"<<pAig->nRegs<<endl;
     Abc_NtkForEachLatch(pNtk, pLatch, i){
         cInit[j][0] = toLitCond(
                         pCnf->pVarNums[Aig_ObjId(Saig_ManLo(pAig, j))],

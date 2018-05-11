@@ -67,9 +67,7 @@ while(currframe < maxframes){
 					--currframe
 				}
 				else{
-					BREAK
 					cex = gen2(cex, CNF_ARR[zero], CNF_ARR[currframe])
-					BREAK
 					--stkptr
 					++currframe
 

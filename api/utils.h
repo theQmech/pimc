@@ -30,6 +30,9 @@ using namespace std;
     }                                                                          \
 })
 
+extern bool VERBOSE;
+extern bool DEBUG;
+
 void logAndStop(string msg);
 int readAig(Abc_Frame_t *pAbc, string fileName);
 Cnf_Dat_t *aig2cnf(Aig_Man_t *pAig);

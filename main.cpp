@@ -1,3 +1,7 @@
+#include <sys/resource.h>
+#include <unistd.h>
+#include <csignal>
+
 #include "api.h"
 #include "lre/driver.hh"
 
@@ -31,7 +35,54 @@ void initsymbols(){
 	*(symtab[symtab.get_symbol("I")].data) = I;
 }
 
+void set_limits(){
+	struct rlimit old_l, new_l;
+	struct rlimit *newp;
+	pid_t pid = getpid();
+
+	// 5 seconds
+	new_l.rlim_cur = 5;
+	new_l.rlim_max = 6;
+	newp = &new_l;
+	if (prlimit(pid, RLIMIT_CPU, newp, &old_l) == -1){
+		perror("prlimit-1");
+		exit(EXIT_FAILURE);
+	}
+
+	// 1 GB = 1<<30
+	new_l.rlim_cur = 1<<30;
+	new_l.rlim_max = 1<<31;
+	newp = &new_l;
+
+	if (prlimit(pid, RLIMIT_AS, newp, &old_l) == -1){
+		perror("prlimit-2");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void segv_handler(int signum){
+	global_ret_value = _result::EMEM;
+	// cout << "Interrupt signal (" << signum << ") received.\n";
+	// exit(signum);
+	handle_exit();
+}
+
+void xcpu_handler(int signum){
+	global_ret_value = _result::TIMEOUT;
+	// cout << "Interrupt signal (" << signum << ") received.\n";
+	// exit(signum);
+	handle_exit();
+}
+
+void register_handlers(){
+	signal(SIGSEGV, segv_handler);
+	signal(SIGXCPU, xcpu_handler);
+}
+
 int main(int argc, char *argv[]){
+	set_limits();
+	register_handlers();
+
 	if (argc != 3){
 		cout<<"Usage: "<<argv[0]<<" <lre_file> <aig_file>"<<endl;
 		return 1;
@@ -44,32 +95,40 @@ int main(int argc, char *argv[]){
 
 	Abc_Frame_t *pAbc = Abc_FrameGetGlobalFrame();
 	if (readAig(pAbc, aig_file) == 0){
-		cerr<<"Reading AIG complete"<<endl;
+		if (VERBOSE)
+			cout<<"Reading AIG complete"<<endl;
 	}
 	else{
-		cerr<<"Reading AIG fail"<<endl;
+		if (VERBOSE)
+			cout<<"Reading AIG fail"<<endl;
 		return 0;
 	}
 
 	man_t.load_network(pAbc);
-	cout<<"Processed AIG file"<<endl;
+	if (VERBOSE)
+		cout<<"Processed AIG file"<<endl;
 
 	fillsymbols();
 	initsymbols();
-	cout<<"Filled Symbol Table"<<endl;
+	if (VERBOSE)
+		cout<<"Filled Symbol Table"<<endl;
 
 	driver.verbose = VERBOSE;
-	if (driver.parse(argv[1]) == 0)
-		std::cout<<"Parsing complete"<<std::endl;
+	if (driver.parse(argv[1]) == 0){
+		if (VERBOSE)
+			std::cout<<"Parsing complete"<<std::endl;
+	}
 	else{
-		std::cerr<<"Parsing fail"<<std::endl;
+		if (VERBOSE)
+			std::cerr<<"Parsing fail"<<std::endl;
 		return 1;
 	}
 
 	if (VERBOSE)
 		driver.root->print(0);
 
-	std::cout<<"--------------------------------------------"<<endl<<endl<<endl;
+	if (VERBOSE)
+		std::cout<<"--------------------------------------------"<<endl<<endl;
 
 	driver.root->compute();
 

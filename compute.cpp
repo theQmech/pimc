@@ -102,7 +102,7 @@ void lre_node::compute(){
 			break;
 
 		case node_type::_break_:{
-			extra_debug();
+			// extra_debug();
 			if (VERBOSE)
 				cout<<"At break point "<<loc<<endl;
 			if (DEBUG)

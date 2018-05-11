@@ -16,27 +16,30 @@ int readAig(Abc_Frame_t *pAbc, string fileName){
     int fUseResyn2  = 1; // copied from demo.c.
 
     RUN_CMD(pAbc, "read " + string(fileName)); // read the file
-    RUN_CMD(pAbc, "print_stats"); // print the numer of i/o latch and and gates
+    if (VERBOSE)
+        // print the numer of i/o latch and and gates
+        RUN_CMD(pAbc, "print_stats");
 
     // Following commands may modify network, sometimes even removing latches
     // (pdtvisgray0.aig). Keep them commented for now.
 
-    RUN_CMD(pAbc, "balance"); // balance and cleanup
+    // RUN_CMD(pAbc, "balance"); // balance and cleanup
 
-    // The next few commands try to reduce the size of the network, remove
-    // dangling nodes, refactor and fraig the network
-    RUN_CMD(pAbc, "scleanup"); // Remove dangling nodes
-    if (fUseResyn2) // Copied from demo.c file
-        RUN_CMD(pAbc, "balance; rewrite -l; \
-            refactor -l; balance; rewrite -l; \
-            rewrite -lz; balance; refactor -lz; \
-            rewrite -lz; balance");
-    else
-        RUN_CMD(pAbc, "balance; rewrite -l; \
-            rewrite -lz; balance; \
-            rewrite -lz; balance");
-    RUN_CMD(pAbc, "fraig");
-    RUN_CMD(pAbc, "print_stats");
+    // // The next few commands try to reduce the size of the network, remove
+    // // dangling nodes, refactor and fraig the network
+    // RUN_CMD(pAbc, "scleanup"); // Remove dangling nodes
+    // if (fUseResyn2) // Copied from demo.c file
+    //     RUN_CMD(pAbc, "balance; rewrite -l; \
+    //         refactor -l; balance; rewrite -l; \
+    //         rewrite -lz; balance; refactor -lz; \
+    //         rewrite -lz; balance");
+    // else
+    //     RUN_CMD(pAbc, "balance; rewrite -l; \
+    //         rewrite -lz; balance; \
+    //         rewrite -lz; balance");
+    // RUN_CMD(pAbc, "fraig");
+    // if (VERBOSE)
+    //     RUN_CMD(pAbc, "print_stats");
 
     return 0;
 }

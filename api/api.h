@@ -5,7 +5,7 @@
 
 #define STO_SZ 400
 
-enum class _result {SAT, UNSAT, UNDEF};
+enum class _result {SAT, UNSAT, TIMEOUT, EMEM, UNDEF};
 extern _result global_ret_value;
 
 void handle_exit();
